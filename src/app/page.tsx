@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ShoppingCart, RefreshCw } from 'lucide-react'
+import { ShoppingCart, RefreshCw, Sparkles } from 'lucide-react'
 import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
@@ -125,7 +125,6 @@ export default function Home() {
     const checkedItems = items.filter(i => i.checked)
     if (checkedItems.length === 0) return
 
-    // Add to purchase history
     const historyItems = checkedItems.map(i => ({
       item_name: i.name,
       quantity: i.quantity,
@@ -133,7 +132,6 @@ export default function Home() {
     }))
     await supabase.from('purchase_history').insert(historyItems)
 
-    // Remove checked items from shopping list
     const ids = checkedItems.map(i => i.id)
     await supabase.from('shopping_items').delete().in('id', ids)
 
@@ -146,27 +144,49 @@ export default function Home() {
     await handleAddItem(name, 1, 'Other')
   }
 
+  const itemCount = items.filter(i => !i.checked).length
+  const cartCount = items.filter(i => i.checked).length
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-violet-50 via-indigo-50/30 to-rose-50/20">
+    <div className="min-h-screen pastel-bg bg-gradient-to-br from-violet-50/80 via-fuchsia-50/30 to-sky-50/50">
       {/* Header */}
-      <header className="bg-white/70 backdrop-blur-md border-b border-violet-100/30 sticky top-0 z-10 safe-top">
+      <header className="bg-white/60 backdrop-blur-xl border-b border-violet-100/20 sticky top-0 z-10 safe-top">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-md shadow-violet-200">
+            <div className="w-11 h-11 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-300/40">
               <ShoppingCart size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">MyShopList</h1>
-              <p className="text-[11px] text-violet-300">Smart grocery list</p>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                MyShopList
+              </h1>
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={10} className="text-fuchsia-300" />
+                <p className="text-[11px] text-violet-400/80">Smart grocery list</p>
+              </div>
             </div>
           </div>
-          <button
-            onClick={fetchAll}
-            className="w-10 h-10 flex items-center justify-center text-violet-300 hover:text-violet-500 active:text-violet-600 transition-colors rounded-xl hover:bg-violet-50 active:bg-violet-100 touch-press"
-            title="Refresh"
-          >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          </button>
+
+          {/* Stats pills */}
+          <div className="flex items-center gap-2">
+            {itemCount > 0 && (
+              <div className="px-2.5 py-1 rounded-xl bg-violet-100/60 text-[11px] font-semibold text-violet-500">
+                {itemCount} to buy
+              </div>
+            )}
+            {cartCount > 0 && (
+              <div className="px-2.5 py-1 rounded-xl bg-emerald-100/60 text-[11px] font-semibold text-emerald-500">
+                {cartCount} in cart
+              </div>
+            )}
+            <button
+              onClick={fetchAll}
+              className="w-10 h-10 flex items-center justify-center text-violet-300 hover:text-violet-500 active:text-violet-600 transition-colors rounded-xl hover:bg-violet-50 active:bg-violet-100 touch-press"
+              title="Refresh"
+            >
+              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -174,7 +194,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-8">
         {/* Error Banner */}
         {error && (
-          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between">
+          <div className="mb-4 px-4 py-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-2xl flex items-center justify-between">
             <p className="text-sm text-red-600">{error}</p>
             <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 text-xs font-medium ml-3">Dismiss</button>
           </div>
@@ -187,7 +207,6 @@ export default function Home() {
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-          {/* Shopping List - takes 2 columns on desktop */}
           <div className="lg:col-span-2">
             <ShoppingList
               items={items}
@@ -197,7 +216,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-5 sm:space-y-6">
             <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
             <RecentPurchases purchases={recentPurchases} />
@@ -206,8 +224,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-violet-100/30 mt-8 safe-bottom">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-center text-xs text-violet-300">
+      <footer className="border-t border-violet-100/20 mt-8 safe-bottom">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-center text-xs text-violet-300/60">
           MyShopList
         </div>
       </footer>
