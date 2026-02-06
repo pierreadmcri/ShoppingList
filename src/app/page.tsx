@@ -1,23 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { ShoppingCart, RefreshCw } from 'lucide-react'
 import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
 import TopItems from '@/components/TopItems'
+import WeeklyStats from '@/components/WeeklyStats'
 
 type TopItem = { item_name: string; count: number }
 
 export default function Home() {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [recentPurchases, setRecentPurchases] = useState<PurchaseHistory[]>([])
+  const [weeklyPurchases, setWeeklyPurchases] = useState<PurchaseHistory[]>([])
   const [topItems, setTopItems] = useState<TopItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // --- Chargement des données ---
   const fetchItems = useCallback(async () => {
     const { data } = await supabase
       .from('shopping_items')
@@ -32,8 +33,24 @@ export default function Home() {
       .from('purchase_history')
       .select('*')
       .order('purchased_at', { ascending: false })
-      .limit(20)
+      .limit(40)
     if (data) setRecentPurchases(data)
+  }, [])
+
+  const fetchWeeklyPurchases = useCallback(async () => {
+    const weekStart = new Date()
+    const day = weekStart.getDay()
+    const diff = day === 0 ? -6 : 1 - day
+    weekStart.setDate(weekStart.getDate() + diff)
+    weekStart.setHours(0, 0, 0, 0)
+
+    const { data } = await supabase
+      .from('purchase_history')
+      .select('*')
+      .gte('purchased_at', weekStart.toISOString())
+      .order('purchased_at', { ascending: false })
+
+    if (data) setWeeklyPurchases(data)
   }, [])
 
   const fetchTopItems = useCallback(async () => {
@@ -43,19 +60,16 @@ export default function Home() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    await Promise.all([fetchItems(), fetchRecentPurchases(), fetchTopItems()])
+    await Promise.all([fetchItems(), fetchRecentPurchases(), fetchWeeklyPurchases(), fetchTopItems()])
     setLoading(false)
-  }, [fetchItems, fetchRecentPurchases, fetchTopItems])
+  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
 
-  // --- Initialisation et Temps réel ---
   useEffect(() => {
-    let ignore = false
     async function load() {
       await fetchAll()
     }
     load()
-    return () => { ignore = true }
-  }, []) // On lance fetchAll au montage uniquement
+  }, [fetchAll])
 
   useEffect(() => {
     const channel = supabase
@@ -63,14 +77,14 @@ export default function Home() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, fetchItems)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, () => {
         fetchRecentPurchases()
+        fetchWeeklyPurchases()
         fetchTopItems()
       })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [fetchItems, fetchRecentPurchases, fetchTopItems])
+  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
 
-  // --- Handlers (Actions) ---
   const handleAddItem = async (name: string, quantity: number, category: string) => {
     setError(null)
     const { error: err } = await supabase
@@ -81,7 +95,6 @@ export default function Home() {
   }
 
   const handleToggle = async (id: string, checked: boolean) => {
-    // Optimistic UI update (mise à jour immédiate avant la réponse serveur)
     setItems(prev => prev.map(i => i.id === id ? { ...i, checked } : i))
     await supabase.from('shopping_items').update({ checked }).eq('id', id)
   }
@@ -100,14 +113,14 @@ export default function Home() {
       quantity: i.quantity,
       category: i.category,
     }))
-    
-    // Séquence : Ajouter historique -> Supprimer items -> Rafraîchir UI
+
     await supabase.from('purchase_history').insert(historyItems)
     const ids = checkedItems.map(i => i.id)
     await supabase.from('shopping_items').delete().in('id', ids)
 
     setItems(prev => prev.filter(i => !i.checked))
     fetchRecentPurchases()
+    fetchWeeklyPurchases()
     fetchTopItems()
   }
 
@@ -115,10 +128,26 @@ export default function Home() {
     await handleAddItem(name, 1, 'Other')
   }
 
-  // --- Rendu ---
+  const autocompleteSuggestions = useMemo(() => {
+    const seen = new Set<string>()
+    const merged = [...recentPurchases, ...weeklyPurchases]
+
+    return merged
+      .filter((purchase) => {
+        const key = purchase.item_name.trim().toLowerCase()
+        if (!key || seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      .slice(0, 25)
+      .map((purchase) => ({
+        name: purchase.item_name,
+        category: purchase.category,
+      }))
+  }, [recentPurchases, weeklyPurchases])
+
   return (
     <div className="min-h-screen pastel-bg">
-      {/* Header Sticky adapté iPhone (flou + safe-area) */}
       <header className="sticky top-0 z-20 safe-top transition-all duration-200">
         <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 pb-2 pt-2 px-4">
             <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
@@ -140,26 +169,23 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 py-6 safe-bottom">
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>
         )}
 
         <div className="space-y-6">
-            {/* Formulaire d'ajout */}
-            <AddItemForm onAdd={handleAddItem} />
+            <AddItemForm onAdd={handleAddItem} suggestions={autocompleteSuggestions} />
 
-            {/* Liste principale */}
             <ShoppingList
               items={items}
               onToggle={handleToggle}
               onDelete={handleDelete}
               onValidatePurchases={handleValidatePurchases}
             />
-            
-            {/* Widgets (Top & Récent) - Empilés en bas pour mobile */}
+
             <div className="grid grid-cols-1 gap-4 pt-8 border-t border-slate-200/50">
+                <WeeklyStats purchases={weeklyPurchases} />
                 <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
                 <RecentPurchases purchases={recentPurchases} />
             </div>
