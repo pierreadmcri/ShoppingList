@@ -14,9 +14,9 @@ export default function RecentPurchases({ purchases }: Props) {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <Clock size={20} className="text-gray-400" />
-          Derniers achats
+          Recent Purchases
         </h2>
-        <p className="text-gray-400 text-sm text-center py-4">Aucun achat récent</p>
+        <p className="text-gray-400 text-sm text-center py-4">No recent purchases</p>
       </div>
     )
   }
@@ -27,7 +27,7 @@ export default function RecentPurchases({ purchases }: Props) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
         <Clock size={20} className="text-indigo-400" />
-        Derniers achats
+        Recent Purchases
       </h2>
       <div className="space-y-4">
         {Object.entries(grouped).map(([date, items]) => (
@@ -57,7 +57,7 @@ export default function RecentPurchases({ purchases }: Props) {
 function groupByDate(purchases: PurchaseHistory[]): Record<string, PurchaseHistory[]> {
   const groups: Record<string, PurchaseHistory[]> = {}
   for (const p of purchases) {
-    const date = new Date(p.purchased_at).toLocaleDateString('fr-FR', {
+    const date = new Date(p.purchased_at).toLocaleDateString('en-US', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',

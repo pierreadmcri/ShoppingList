@@ -20,7 +20,7 @@ export default function TopItems({ topItems, onQuickAdd }: Props) {
           <Trophy size={20} className="text-gray-400" />
           Top 20
         </h2>
-        <p className="text-gray-400 text-sm text-center py-4">Pas encore de données</p>
+        <p className="text-gray-400 text-sm text-center py-4">No data yet</p>
       </div>
     )
   }
@@ -29,7 +29,7 @@ export default function TopItems({ topItems, onQuickAdd }: Props) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
         <Trophy size={20} className="text-amber-400" />
-        Top 20 articles
+        Top 20 Items
       </h2>
       <div className="space-y-2">
         {topItems.map((item, index) => (
@@ -48,7 +48,7 @@ export default function TopItems({ topItems, onQuickAdd }: Props) {
             </span>
             <span className="text-xs text-gray-400">{item.count}x</span>
             <span className="text-xs text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
-              + ajouter
+              + add
             </span>
           </button>
         ))}

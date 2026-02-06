@@ -19,8 +19,8 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-12 text-center">
         <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-        <p className="text-gray-400 text-lg">Votre liste est vide</p>
-        <p className="text-gray-300 text-sm mt-1">Ajoutez des articles pour commencer</p>
+        <p className="text-gray-400 text-lg">Your list is empty</p>
+        <p className="text-gray-300 text-sm mt-1">Add items to get started</p>
       </div>
     )
   }
@@ -29,7 +29,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="p-4 sm:p-6 border-b border-gray-50 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-800">
-          Ma liste <span className="text-sm font-normal text-gray-400">({items.length} article{items.length > 1 ? 's' : ''})</span>
+          My List <span className="text-sm font-normal text-gray-400">({items.length} item{items.length > 1 ? 's' : ''})</span>
         </h2>
         {checked.length > 0 && (
           <button
@@ -37,7 +37,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm hover:shadow-md"
           >
             <Check size={16} />
-            Valider les achats ({checked.length})
+            Confirm purchases ({checked.length})
           </button>
         )}
       </div>
@@ -53,7 +53,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
       {checked.length > 0 && (
         <>
           <div className="px-4 sm:px-6 py-2 bg-gray-50">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Dans le panier</span>
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">In cart</span>
           </div>
           <div className="divide-y divide-gray-50 opacity-60">
             {checked.map((item) => (
@@ -104,7 +104,7 @@ function ItemRow({ item, onToggle, onDelete }: {
         <button
           onClick={() => onToggle(item.id, false)}
           className="p-1.5 text-gray-300 hover:text-amber-500 transition-colors opacity-0 group-hover:opacity-100"
-          title="Remettre dans la liste"
+          title="Put back on list"
         >
           <Undo2 size={16} />
         </button>

@@ -1,49 +1,49 @@
-# MaCourseList
+# MyShopList
 
-Application de gestion de liste de courses avec validation en direct.
+A smart shopping list app with live checkout validation.
 
-## Stack technique
+## Tech Stack
 
-- **Frontend** : Next.js 14, TypeScript, Tailwind CSS
-- **Base de données** : Supabase (PostgreSQL gratuit)
-- **Icônes** : Lucide React
-- **Déploiement** : Vercel
+- **Frontend**: Next.js 16, TypeScript, Tailwind CSS
+- **Database**: Supabase (free PostgreSQL)
+- **Icons**: Lucide React
+- **Deployment**: Vercel
 
-## Fonctionnalités
+## Features
 
-- Ajouter des articles avec quantité et catégorie
-- Cocher les articles au fur et à mesure en magasin
-- Valider les achats (déplace dans l'historique)
-- Historique des derniers achats
-- Top 20 des articles les plus achetés (ajout rapide en un clic)
-- Mise à jour en temps réel (multi-appareils via Supabase Realtime)
+- Add items with quantity and category
+- Check off items while shopping in-store
+- Confirm purchases (moves to history)
+- Recent purchases history
+- Top 20 most bought items (quick-add with one click)
+- Real-time sync across devices via Supabase Realtime
 
-## Installation
+## Setup
 
-1. Cloner le repo et installer les dépendances :
+1. Clone the repo and install dependencies:
 ```bash
 npm install
 ```
 
-2. Créer un projet sur [supabase.com](https://supabase.com) (gratuit)
+2. Create a project on [supabase.com](https://supabase.com) (free)
 
-3. Exécuter le schéma SQL dans l'éditeur SQL de Supabase :
+3. Run the SQL schema in the Supabase SQL editor:
 ```sql
--- Copier le contenu de supabase-schema.sql
+-- Copy the contents of supabase-schema.sql
 ```
 
-4. Copier `.env.local.example` vers `.env.local` et remplir les valeurs :
+4. Copy `.env.local.example` to `.env.local` and fill in the values:
 ```bash
 cp .env.local.example .env.local
 ```
 
-5. Lancer le serveur de développement :
+5. Start the development server:
 ```bash
 npm run dev
 ```
 
-## Déploiement sur Vercel
+## Deploy to Vercel
 
-1. Connecter le repo GitHub à Vercel
-2. Ajouter les variables d'environnement Supabase dans les settings Vercel
-3. Déployer
+1. Connect the GitHub repo to Vercel
+2. Add the Supabase environment variables in Vercel settings
+3. Deploy

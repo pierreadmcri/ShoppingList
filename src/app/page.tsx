@@ -132,7 +132,7 @@ export default function Home() {
   }
 
   const handleQuickAdd = async (name: string) => {
-    await handleAddItem(name, 1, 'Autre')
+    await handleAddItem(name, 1, 'Other')
   }
 
   return (
@@ -145,14 +145,14 @@ export default function Home() {
               <ShoppingCart size={22} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">MaCourseList</h1>
-              <p className="text-xs text-gray-400">Gérez vos courses simplement</p>
+              <h1 className="text-xl font-bold text-gray-800">MyShopList</h1>
+              <p className="text-xs text-gray-400">Manage your groceries simply</p>
             </div>
           </div>
           <button
             onClick={fetchAll}
             className="p-2 text-gray-400 hover:text-indigo-500 transition-colors rounded-lg hover:bg-indigo-50"
-            title="Rafraîchir"
+            title="Refresh"
           >
             <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
           </button>
@@ -189,7 +189,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-gray-100 mt-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 text-center text-sm text-gray-400">
-          MaCourseList &mdash; Votre liste de courses intelligente
+          MyShopList &mdash; Your smart shopping list
         </div>
       </footer>
     </div>
