@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { ShoppingCart, RefreshCw, Sparkles } from 'lucide-react'
+import { ShoppingCart, RefreshCw } from 'lucide-react'
 import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
@@ -17,6 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // --- Chargement des données ---
   const fetchItems = useCallback(async () => {
     const { data } = await supabase
       .from('shopping_items')
@@ -31,13 +32,12 @@ export default function Home() {
       .from('purchase_history')
       .select('*')
       .order('purchased_at', { ascending: false })
-      .limit(30)
+      .limit(20)
     if (data) setRecentPurchases(data)
   }, [])
 
   const fetchTopItems = useCallback(async () => {
-    const { data } = await supabase
-      .rpc('get_top_items', { limit_count: 20 })
+    const { data } = await supabase.rpc('get_top_items', { limit_count: 10 })
     if (data) setTopItems(data)
   }, [])
 
@@ -47,78 +47,48 @@ export default function Home() {
     setLoading(false)
   }, [fetchItems, fetchRecentPurchases, fetchTopItems])
 
+  // --- Initialisation et Temps réel ---
   useEffect(() => {
     let ignore = false
     async function load() {
-      const [itemsRes, purchasesRes, topRes] = await Promise.all([
-        supabase.from('shopping_items').select('*').order('checked', { ascending: true }).order('created_at', { ascending: false }),
-        supabase.from('purchase_history').select('*').order('purchased_at', { ascending: false }).limit(30),
-        supabase.rpc('get_top_items', { limit_count: 20 }),
-      ])
-      if (!ignore) {
-        if (itemsRes.error) {
-          console.error('Fetch items error:', itemsRes.error)
-          setError(itemsRes.error.message)
-        }
-        if (itemsRes.data) setItems(itemsRes.data)
-        if (purchasesRes.data) setRecentPurchases(purchasesRes.data)
-        if (topRes.data) setTopItems(topRes.data)
-        setLoading(false)
-      }
+      await fetchAll()
     }
     load()
     return () => { ignore = true }
-  }, [])
+  }, []) // On lance fetchAll au montage uniquement
 
-  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('shopping-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, () => {
-        fetchItems()
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, fetchItems)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, () => {
         fetchRecentPurchases()
         fetchTopItems()
       })
       .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [fetchItems, fetchRecentPurchases, fetchTopItems])
 
+  // --- Handlers (Actions) ---
   const handleAddItem = async (name: string, quantity: number, category: string) => {
     setError(null)
-    const { data, error: err } = await supabase
+    const { error: err } = await supabase
       .from('shopping_items')
       .insert({ name, quantity, category })
-      .select()
-      .single()
-    if (err) {
-      console.error('Supabase insert error:', err)
-      setError(err.message)
-      return
-    }
-    if (data) {
-      fetchItems()
-    }
+    if (err) setError(err.message)
+    else fetchItems()
   }
 
   const handleToggle = async (id: string, checked: boolean) => {
-    await supabase
-      .from('shopping_items')
-      .update({ checked })
-      .eq('id', id)
+    // Optimistic UI update (mise à jour immédiate avant la réponse serveur)
     setItems(prev => prev.map(i => i.id === id ? { ...i, checked } : i))
+    await supabase.from('shopping_items').update({ checked }).eq('id', id)
   }
 
   const handleDelete = async (id: string) => {
-    await supabase
-      .from('shopping_items')
-      .delete()
-      .eq('id', id)
     setItems(prev => prev.filter(i => i.id !== id))
+    await supabase.from('shopping_items').delete().eq('id', id)
   }
 
   const handleValidatePurchases = async () => {
@@ -130,8 +100,9 @@ export default function Home() {
       quantity: i.quantity,
       category: i.category,
     }))
+    
+    // Séquence : Ajouter historique -> Supprimer items -> Rafraîchir UI
     await supabase.from('purchase_history').insert(historyItems)
-
     const ids = checkedItems.map(i => i.id)
     await supabase.from('shopping_items').delete().in('id', ids)
 
@@ -144,91 +115,56 @@ export default function Home() {
     await handleAddItem(name, 1, 'Other')
   }
 
-  const itemCount = items.filter(i => !i.checked).length
-  const cartCount = items.filter(i => i.checked).length
-
+  // --- Rendu ---
   return (
-    <div className="min-h-screen pastel-bg bg-gradient-to-br from-violet-50/80 via-fuchsia-50/30 to-sky-50/50">
-      {/* Header */}
-      <header className="bg-white/60 backdrop-blur-xl border-b border-violet-100/20 sticky top-0 z-10 safe-top">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-300/40">
-              <ShoppingCart size={20} className="text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
-                MyShopList
-              </h1>
-              <div className="flex items-center gap-1.5">
-                <Sparkles size={10} className="text-fuchsia-300" />
-                <p className="text-[11px] text-violet-400/80">Smart grocery list</p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen pastel-bg">
+      {/* Header Sticky adapté iPhone (flou + safe-area) */}
+      <header className="sticky top-0 z-20 safe-top transition-all duration-200">
+        <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 pb-2 pt-2 px-4">
+            <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200">
+                        <ShoppingCart size={20} className="text-white" />
+                    </div>
+                    <span className="font-bold text-lg text-slate-800 tracking-tight">MyShopList</span>
+                </div>
 
-          {/* Stats pills */}
-          <div className="flex items-center gap-2">
-            {itemCount > 0 && (
-              <div className="px-2.5 py-1 rounded-xl bg-violet-100/60 text-[11px] font-semibold text-violet-500">
-                {itemCount} to buy
-              </div>
-            )}
-            {cartCount > 0 && (
-              <div className="px-2.5 py-1 rounded-xl bg-emerald-100/60 text-[11px] font-semibold text-emerald-500">
-                {cartCount} in cart
-              </div>
-            )}
-            <button
-              onClick={fetchAll}
-              className="w-10 h-10 flex items-center justify-center text-violet-300 hover:text-violet-500 active:text-violet-600 transition-colors rounded-xl hover:bg-violet-50 active:bg-violet-100 touch-press"
-              title="Refresh"
-            >
-              <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-            </button>
-          </div>
+                <button
+                    onClick={fetchAll}
+                    className="w-10 h-10 flex items-center justify-center text-slate-400 active:text-violet-600 active:bg-violet-50 rounded-xl transition-all touch-press"
+                    aria-label="Refresh"
+                >
+                    <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+                </button>
+            </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-8">
-        {/* Error Banner */}
+      <main className="max-w-2xl mx-auto px-4 py-6 safe-bottom">
         {error && (
-          <div className="mb-4 px-4 py-3 bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-2xl flex items-center justify-between">
-            <p className="text-sm text-red-600">{error}</p>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 text-xs font-medium ml-3">Dismiss</button>
-          </div>
+          <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">{error}</div>
         )}
 
-        {/* Add Item Form */}
-        <div className="mb-5">
-          <AddItemForm onAdd={handleAddItem} />
-        </div>
+        <div className="space-y-6">
+            {/* Formulaire d'ajout */}
+            <AddItemForm onAdd={handleAddItem} />
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
-          <div className="lg:col-span-2">
+            {/* Liste principale */}
             <ShoppingList
               items={items}
               onToggle={handleToggle}
               onDelete={handleDelete}
               onValidatePurchases={handleValidatePurchases}
             />
-          </div>
-
-          <div className="space-y-5 sm:space-y-6">
-            <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
-            <RecentPurchases purchases={recentPurchases} />
-          </div>
+            
+            {/* Widgets (Top & Récent) - Empilés en bas pour mobile */}
+            <div className="grid grid-cols-1 gap-4 pt-8 border-t border-slate-200/50">
+                <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
+                <RecentPurchases purchases={recentPurchases} />
+            </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-violet-100/20 mt-8 safe-bottom">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-center text-xs text-violet-300/60">
-          MyShopList
-        </div>
-      </footer>
     </div>
   )
 }

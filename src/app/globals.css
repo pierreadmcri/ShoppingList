@@ -7,80 +7,91 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
   }
-
   body {
-    overscroll-behavior-y: none;
-    background: #faf8ff;
-  }
-
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  .safe-top {
-    padding-top: env(safe-area-inset-top, 0px);
+    overscroll-behavior-y: none; /* Empêche le rebond élastique de toute la page */
+    background: #f8fafc;
+    color: #1e293b;
   }
 }
 
 @layer utilities {
+  /* Gestion de l'encoche (Notch) et de la barre du bas sur iPhone */
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
+  .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+  
+  /* Animation bouton tactile style iOS (effet d'enfoncement) */
   .touch-press {
-    @apply active:scale-[0.97] transition-transform duration-100;
+    @apply active:scale-[0.96] transition-transform duration-100 ease-out;
   }
 
+  /* Cache la scrollbar mais garde le scroll */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Active l'inertie native sur iOS pour les listes horizontales */
+  .ios-momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Animation d'entrée pour les items */
+  .animate-enter {
+    animation: enter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 
-/* Animated pastel background blobs */
+@keyframes enter {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Background Blobs (Optimisé mobile) */
 .pastel-bg {
   position: relative;
-  overflow: hidden;
+  min-height: 100vh;
+  background-color: #fcfaff;
 }
 .pastel-bg::before,
 .pastel-bg::after {
   content: '';
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.5;
-  z-index: -1;
+  filter: blur(80px); /* Flou légèrement réduit pour la performance mobile */
+  opacity: 0.4;
+  z-index: 0;
   pointer-events: none;
 }
 .pastel-bg::before {
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(135deg, #e0d4fc, #c7d2fe);
-  top: -100px;
-  right: -100px;
-  animation: float1 20s ease-in-out infinite;
+  width: 80vw;
+  height: 80vw;
+  background: radial-gradient(circle, #ddd6fe, #c4b5fd);
+  top: -20vw;
+  right: -20vw;
+  animation: float1 25s ease-in-out infinite;
 }
 .pastel-bg::after {
-  width: 350px;
-  height: 350px;
-  background: linear-gradient(135deg, #fce7f3, #fbd5e8);
-  bottom: 10%;
-  left: -80px;
-  animation: float2 25s ease-in-out infinite;
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, #fbcfe8, #f9a8d4);
+  bottom: -10vw;
+  left: -20vw;
+  animation: float2 30s ease-in-out infinite reverse;
 }
 
 @keyframes float1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-30px, 40px) scale(1.05); }
-  66% { transform: translate(20px, -20px) scale(0.95); }
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-20px, 30px); }
 }
 @keyframes float2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(40px, -30px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, -20px); }
 }
 
-/* Card glass effect */
+/* Style des cartes standardisé */
 .card {
-  @apply bg-white/70 backdrop-blur-md rounded-3xl border border-white/60 shadow-sm;
-  box-shadow: 0 2px 16px rgba(139, 92, 246, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  @apply bg-white/85 backdrop-blur-xl rounded-3xl border border-white/60 shadow-sm;
+  box-shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.05);
 }

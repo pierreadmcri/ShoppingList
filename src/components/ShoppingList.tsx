@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Trash2, ShoppingCart, ShoppingBag } from 'lucide-react'
+import { Check, Trash2, ShoppingBag } from 'lucide-react'
 import { ShoppingItem } from '@/lib/supabase'
 import { getCategoryInfo } from '@/lib/categories'
 
@@ -14,61 +14,67 @@ type Props = {
 export default function ShoppingList({ items, onToggle, onDelete, onValidatePurchases }: Props) {
   const unchecked = items.filter(i => !i.checked)
   const checked = items.filter(i => i.checked)
+  const total = items.length
+  const progress = total === 0 ? 0 : Math.round((checked.length / total) * 100)
 
-  if (items.length === 0) {
+  if (total === 0) {
     return (
-      <div className="card p-10 text-center">
-        <div className="w-20 h-20 mx-auto bg-gradient-to-br from-violet-100 via-purple-100 to-fuchsia-100 rounded-3xl flex items-center justify-center mb-5 shadow-inner">
-          <ShoppingCart size={32} className="text-violet-400" />
+      <div className="flex flex-col items-center justify-center py-16 text-center opacity-60">
+        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+          <ShoppingBag size={28} className="text-slate-400" />
         </div>
-        <p className="text-gray-500 text-base font-semibold">Your list is empty</p>
-        <p className="text-violet-300 text-sm mt-1.5">Add your first item above</p>
+        <p className="text-slate-500 font-medium">Liste vide</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-base font-bold text-gray-700">
-          Shopping List
-        </h2>
-        {checked.length > 0 && (
-          <button
-            onClick={onValidatePurchases}
-            className="px-5 py-2.5 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-white rounded-2xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-200/50 touch-press"
-          >
-            <ShoppingBag size={15} strokeWidth={2.5} />
-            Checkout ({checked.length})
-          </button>
-        )}
-      </div>
-
-      {/* Unchecked items */}
-      {unchecked.length > 0 && (
-        <div className="card overflow-hidden divide-y divide-violet-50/40">
-          {unchecked.map((item) => (
-            <ItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
-          ))}
+    <div className="space-y-6 pb-4">
+      
+      {/* Barre de progression Slim */}
+      {total > 0 && (
+        <div className="px-2 sticky top-[72px] z-10 bg-gradient-to-b from-[#f8fafc] via-[#f8fafc] to-transparent pb-4 pt-2">
+          <div className="h-1.5 bg-slate-200/60 rounded-full overflow-hidden w-full">
+            <div 
+              className="h-full bg-violet-500 transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
         </div>
       )}
 
-      {/* Checked items */}
-      {checked.length > 0 && (
-        <>
-          <div className="flex items-center gap-2 px-1 pt-3">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center">
-              <Check size={10} className="text-emerald-500" strokeWidth={3} />
-            </div>
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">In cart ({checked.length})</span>
+      {/* Liste à acheter */}
+      <div className="space-y-3">
+        {unchecked.map((item, i) => (
+          <div key={item.id} className="animate-enter" style={{ animationDelay: `${i * 0.03}s` }}>
+            <ItemRow item={item} onToggle={onToggle} onDelete={onDelete} />
           </div>
-          <div className="bg-white/50 backdrop-blur-sm rounded-3xl border border-emerald-100/30 overflow-hidden divide-y divide-emerald-50/20">
+        ))}
+      </div>
+
+      {/* Section Panier */}
+      {checked.length > 0 && (
+        <div className="pt-6 border-t border-slate-200/50">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+              Panier ({checked.length})
+            </h3>
+            
+            <button
+              onClick={onValidatePurchases}
+              className="pl-3 pr-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-200/40 active:bg-emerald-600 transition-all flex items-center gap-2 touch-press"
+            >
+              <Check size={14} strokeWidth={3} />
+              Valider
+            </button>
+          </div>
+          
+          <div className="space-y-2 opacity-70">
             {checked.map((item) => (
               <ItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
             ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   )
@@ -80,44 +86,53 @@ function ItemRow({ item, onToggle, onDelete }: {
   onDelete: (id: string) => Promise<void>
 }) {
   const cat = getCategoryInfo(item.category)
+  const isChecked = item.checked
 
   return (
-    <div className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${item.checked ? 'bg-emerald-50/20' : 'active:bg-violet-50/40'}`}>
-      {/* Checkbox */}
+    <div className={`flex items-center gap-3 p-3 pl-4 rounded-2xl border transition-all duration-200 ${
+      isChecked 
+        ? 'bg-slate-50 border-transparent' 
+        : 'bg-white border-white shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)]'
+    }`}>
+      {/* Checkbox: Zone agrandie */}
       <button
-        onClick={() => onToggle(item.id, !item.checked)}
-        className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all touch-press ${
-          item.checked
-            ? 'bg-gradient-to-br from-emerald-400 to-teal-400 border-emerald-400 text-white shadow-sm shadow-emerald-200/50'
-            : 'border-violet-200/60 active:border-violet-400'
+        onClick={() => onToggle(item.id, !isChecked)}
+        className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all touch-press ${
+          isChecked
+            ? 'bg-emerald-500 border-emerald-500 scale-95'
+            : 'border-slate-300 bg-white'
         }`}
       >
-        {item.checked && <Check size={14} strokeWidth={3} />}
+        {isChecked && <Check size={14} className="text-white" strokeWidth={4} />}
       </button>
 
-      {/* Item info */}
-      <div className="flex-1 min-w-0 flex items-center gap-2.5">
-        <span className="text-xl flex-shrink-0">{cat.emoji}</span>
-        <div className="min-w-0">
-          <span className={`block text-[15px] leading-tight font-medium ${item.checked ? 'line-through text-gray-400/80' : 'text-gray-700'}`}>
+      {/* Clic sur le texte coche aussi */}
+      <div 
+        className="flex-1 flex items-center gap-3 overflow-hidden min-w-0 py-1 cursor-pointer"
+        onClick={() => onToggle(item.id, !isChecked)}
+      >
+        <span className="text-lg flex-shrink-0">{cat.emoji}</span>
+        <div className="min-w-0 flex-1">
+          <p className={`font-semibold text-[15px] truncate transition-all ${
+            isChecked ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-700'
+          }`}>
             {item.name}
-          </span>
-          {(item.quantity > 1 || !item.checked) && (
-            <span className="text-xs text-violet-300">
-              {item.quantity > 1 && `x${item.quantity}`}
-              {item.quantity > 1 && !item.checked && ' · '}
-              {!item.checked && cat.name}
-            </span>
-          )}
+          </p>
+          <p className="text-[11px] text-slate-400">
+            {cat.name} {item.quantity > 1 && <span className="text-violet-500 font-bold ml-1">x{item.quantity}</span>}
+          </p>
         </div>
       </div>
 
-      {/* Delete */}
+      {/* Delete: Toujours visible, style "Quiet" */}
       <button
-        onClick={() => onDelete(item.id)}
-        className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-violet-200 hover:text-red-400 active:text-red-500 active:bg-red-50/50 transition-colors touch-press"
+        onClick={(e) => {
+          e.stopPropagation()
+          onDelete(item.id)
+        }}
+        className="w-10 h-10 flex items-center justify-center text-slate-300 active:text-red-500 active:bg-red-50 rounded-xl transition-colors touch-press"
       >
-        <Trash2 size={16} />
+        <Trash2 size={18} />
       </button>
     </div>
   )
