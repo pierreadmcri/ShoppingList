@@ -11,12 +11,14 @@ type Props = {
 export default function RecentPurchases({ purchases }: Props) {
   if (purchases.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Clock size={20} className="text-gray-400" />
+      <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-violet-100/50 p-5">
+        <h2 className="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
+            <Clock size={16} className="text-violet-400" />
+          </div>
           Recent Purchases
         </h2>
-        <p className="text-gray-400 text-sm text-center py-4">No recent purchases</p>
+        <p className="text-gray-400 text-sm text-center py-3">No recent purchases</p>
       </div>
     )
   }
@@ -24,24 +26,26 @@ export default function RecentPurchases({ purchases }: Props) {
   const grouped = groupByDate(purchases)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-        <Clock size={20} className="text-indigo-400" />
+    <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-violet-100/50 p-4">
+      <h2 className="text-base font-semibold text-gray-700 mb-3 flex items-center gap-2 px-1">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
+          <Clock size={16} className="text-violet-400" />
+        </div>
         Recent Purchases
       </h2>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Object.entries(grouped).map(([date, items]) => (
           <div key={date}>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">{date}</p>
-            <div className="space-y-1.5">
+            <p className="text-[11px] font-semibold text-violet-300 uppercase tracking-wider mb-1.5 px-1">{date}</p>
+            <div className="space-y-0.5">
               {items.map((item) => {
                 const cat = getCategoryInfo(item.category)
                 return (
-                  <div key={item.id} className="flex items-center gap-2 text-sm">
-                    <span>{cat.emoji}</span>
-                    <span className="text-gray-600">{item.item_name}</span>
+                  <div key={item.id} className="flex items-center gap-2.5 text-sm px-2 py-1.5 rounded-xl">
+                    <span className="text-base">{cat.emoji}</span>
+                    <span className="text-gray-600 flex-1">{item.item_name}</span>
                     {item.quantity > 1 && (
-                      <span className="text-gray-400">x{item.quantity}</span>
+                      <span className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-md">x{item.quantity}</span>
                     )}
                   </div>
                 )

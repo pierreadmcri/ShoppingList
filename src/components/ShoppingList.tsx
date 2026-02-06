@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Trash2, ShoppingCart, Undo2 } from 'lucide-react'
+import { Check, Trash2, ShoppingCart } from 'lucide-react'
 import { ShoppingItem } from '@/lib/supabase'
 import { getCategoryInfo } from '@/lib/categories'
 
@@ -17,45 +17,50 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
 
   if (items.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 sm:p-12 text-center">
-        <ShoppingCart size={48} className="mx-auto text-gray-300 mb-4" />
-        <p className="text-gray-400 text-lg">Your list is empty</p>
-        <p className="text-gray-300 text-sm mt-1">Add items to get started</p>
+      <div className="bg-white/60 backdrop-blur-sm rounded-3xl border border-violet-100/50 p-10 text-center">
+        <div className="w-16 h-16 mx-auto bg-gradient-to-br from-violet-100 to-indigo-100 rounded-2xl flex items-center justify-center mb-4">
+          <ShoppingCart size={28} className="text-violet-400" />
+        </div>
+        <p className="text-gray-500 text-base font-medium">Your list is empty</p>
+        <p className="text-gray-400 text-sm mt-1">Add items to get started</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-gray-50 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-800">
-          My List <span className="text-sm font-normal text-gray-400">({items.length} item{items.length > 1 ? 's' : ''})</span>
+    <div className="space-y-3">
+      {/* Header with count + confirm button */}
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-base font-semibold text-gray-700">
+          My List <span className="text-sm font-normal text-gray-400">({items.length})</span>
         </h2>
         {checked.length > 0 && (
           <button
             onClick={onValidatePurchases}
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-all flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 text-white rounded-2xl text-sm font-semibold transition-all flex items-center gap-2 shadow-md shadow-emerald-200 touch-press"
           >
-            <Check size={16} />
-            Confirm purchases ({checked.length})
+            <Check size={16} strokeWidth={2.5} />
+            Done ({checked.length})
           </button>
         )}
       </div>
 
+      {/* Unchecked items */}
       {unchecked.length > 0 && (
-        <div className="divide-y divide-gray-50">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-violet-100/50 overflow-hidden divide-y divide-violet-50/50">
           {unchecked.map((item) => (
             <ItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
           ))}
         </div>
       )}
 
+      {/* Checked items */}
       {checked.length > 0 && (
         <>
-          <div className="px-4 sm:px-6 py-2 bg-gray-50">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">In cart</span>
+          <div className="px-1 pt-2">
+            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">In cart</span>
           </div>
-          <div className="divide-y divide-gray-50 opacity-60">
+          <div className="bg-white/50 backdrop-blur-sm rounded-3xl border border-emerald-100/50 overflow-hidden divide-y divide-emerald-50/30">
             {checked.map((item) => (
               <ItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
             ))}
@@ -74,47 +79,42 @@ function ItemRow({ item, onToggle, onDelete }: {
   const cat = getCategoryInfo(item.category)
 
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-6 py-3 hover:bg-gray-50/50 transition-colors group">
+    <div className="flex items-center gap-3 px-4 py-3.5 active:bg-violet-50/50 transition-colors">
+      {/* Checkbox - large touch target */}
       <button
         onClick={() => onToggle(item.id, !item.checked)}
-        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+        className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all touch-press ${
           item.checked
-            ? 'bg-emerald-500 border-emerald-500 text-white'
-            : 'border-gray-300 hover:border-indigo-400'
+            ? 'bg-gradient-to-br from-emerald-400 to-teal-400 border-emerald-400 text-white shadow-sm shadow-emerald-200'
+            : 'border-violet-200 hover:border-violet-400 active:border-violet-400'
         }`}
       >
-        {item.checked && <Check size={14} />}
+        {item.checked && <Check size={14} strokeWidth={3} />}
       </button>
 
-      <div className="flex-1 min-w-0">
-        <span className={`text-gray-700 ${item.checked ? 'line-through text-gray-400' : ''}`}>
-          {item.name}
-        </span>
-        {item.quantity > 1 && (
-          <span className="ml-2 text-sm text-gray-400">x{item.quantity}</span>
-        )}
+      {/* Item info */}
+      <div className="flex-1 min-w-0 flex items-center gap-2">
+        <span className="text-lg">{cat.emoji}</span>
+        <div className="min-w-0">
+          <span className={`block text-[15px] leading-tight ${item.checked ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+            {item.name}
+          </span>
+          {(item.quantity > 1 || !item.checked) && (
+            <span className="text-xs text-gray-400">
+              {item.quantity > 1 && `x${item.quantity}`}
+              {item.quantity > 1 && !item.checked && ' · '}
+              {!item.checked && cat.name}
+            </span>
+          )}
+        </div>
       </div>
 
-      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cat.color} hidden sm:inline-block`}>
-        {cat.emoji} {cat.name}
-      </span>
-      <span className="sm:hidden text-sm">{cat.emoji}</span>
-
-      {item.checked ? (
-        <button
-          onClick={() => onToggle(item.id, false)}
-          className="p-1.5 text-gray-300 hover:text-amber-500 transition-colors opacity-0 group-hover:opacity-100"
-          title="Put back on list"
-        >
-          <Undo2 size={16} />
-        </button>
-      ) : null}
-
+      {/* Delete button - always visible on mobile */}
       <button
         onClick={() => onDelete(item.id)}
-        className="p-1.5 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+        className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-gray-300 hover:text-red-400 active:text-red-500 active:bg-red-50 transition-colors touch-press"
       >
-        <Trash2 size={16} />
+        <Trash2 size={17} />
       </button>
     </div>
   )

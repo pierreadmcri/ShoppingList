@@ -136,39 +136,39 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-b from-violet-50 via-indigo-50/30 to-rose-50/20">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="bg-white/70 backdrop-blur-md border-b border-violet-100/30 sticky top-0 z-10 safe-top">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-sm">
-              <ShoppingCart size={22} className="text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-md shadow-violet-200">
+              <ShoppingCart size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">MyShopList</h1>
-              <p className="text-xs text-gray-400">Manage your groceries simply</p>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">MyShopList</h1>
+              <p className="text-[11px] text-violet-300">Smart grocery list</p>
             </div>
           </div>
           <button
             onClick={fetchAll}
-            className="p-2 text-gray-400 hover:text-indigo-500 transition-colors rounded-lg hover:bg-indigo-50"
+            className="w-10 h-10 flex items-center justify-center text-violet-300 hover:text-violet-500 active:text-violet-600 transition-colors rounded-xl hover:bg-violet-50 active:bg-violet-100 touch-press"
             title="Refresh"
           >
-            <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-8">
         {/* Add Item Form */}
-        <div className="mb-6">
+        <div className="mb-5">
           <AddItemForm onAdd={handleAddItem} />
         </div>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Shopping List - takes 2 columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+          {/* Shopping List - takes 2 columns on desktop */}
           <div className="lg:col-span-2">
             <ShoppingList
               items={items}
@@ -179,7 +179,7 @@ export default function Home() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
             <RecentPurchases purchases={recentPurchases} />
           </div>
@@ -187,9 +187,9 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 mt-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 text-center text-sm text-gray-400">
-          MyShopList &mdash; Your smart shopping list
+      <footer className="border-t border-violet-100/30 mt-8 safe-bottom">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 text-center text-xs text-violet-300">
+          MyShopList
         </div>
       </footer>
     </div>
