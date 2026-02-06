@@ -3,7 +3,7 @@ CREATE TABLE shopping_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   quantity INTEGER DEFAULT 1,
-  category TEXT DEFAULT 'Autre',
+  category TEXT DEFAULT 'Other',
   checked BOOLEAN DEFAULT false,
   purchased_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -14,7 +14,7 @@ CREATE TABLE purchase_history (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   item_name TEXT NOT NULL,
   quantity INTEGER DEFAULT 1,
-  category TEXT DEFAULT 'Autre',
+  category TEXT DEFAULT 'Other',
   purchased_at TIMESTAMPTZ DEFAULT now()
 );
 
