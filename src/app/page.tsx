@@ -47,8 +47,23 @@ export default function Home() {
   }, [fetchItems, fetchRecentPurchases, fetchTopItems])
 
   useEffect(() => {
-    fetchAll()
-  }, [fetchAll])
+    let ignore = false
+    async function load() {
+      const [itemsRes, purchasesRes, topRes] = await Promise.all([
+        supabase.from('shopping_items').select('*').order('checked', { ascending: true }).order('created_at', { ascending: false }),
+        supabase.from('purchase_history').select('*').order('purchased_at', { ascending: false }).limit(30),
+        supabase.rpc('get_top_items', { limit_count: 20 }),
+      ])
+      if (!ignore) {
+        if (itemsRes.data) setItems(itemsRes.data)
+        if (purchasesRes.data) setRecentPurchases(purchasesRes.data)
+        if (topRes.data) setTopItems(topRes.data)
+        setLoading(false)
+      }
+    }
+    load()
+    return () => { ignore = true }
+  }, [])
 
   // Real-time subscription
   useEffect(() => {
