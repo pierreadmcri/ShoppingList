@@ -15,6 +15,7 @@ export default function Home() {
   const [recentPurchases, setRecentPurchases] = useState<PurchaseHistory[]>([])
   const [topItems, setTopItems] = useState<TopItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchItems = useCallback(async () => {
     const { data } = await supabase
@@ -55,6 +56,10 @@ export default function Home() {
         supabase.rpc('get_top_items', { limit_count: 20 }),
       ])
       if (!ignore) {
+        if (itemsRes.error) {
+          console.error('Fetch items error:', itemsRes.error)
+          setError(itemsRes.error.message)
+        }
         if (itemsRes.data) setItems(itemsRes.data)
         if (purchasesRes.data) setRecentPurchases(purchasesRes.data)
         if (topRes.data) setTopItems(topRes.data)
@@ -84,11 +89,17 @@ export default function Home() {
   }, [fetchItems, fetchRecentPurchases, fetchTopItems])
 
   const handleAddItem = async (name: string, quantity: number, category: string) => {
-    const { data } = await supabase
+    setError(null)
+    const { data, error: err } = await supabase
       .from('shopping_items')
       .insert({ name, quantity, category })
       .select()
       .single()
+    if (err) {
+      console.error('Supabase insert error:', err)
+      setError(err.message)
+      return
+    }
     if (data) {
       fetchItems()
     }
@@ -161,6 +172,14 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-8">
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between">
+            <p className="text-sm text-red-600">{error}</p>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 text-xs font-medium ml-3">Dismiss</button>
+          </div>
+        )}
+
         {/* Add Item Form */}
         <div className="mb-5">
           <AddItemForm onAdd={handleAddItem} />
