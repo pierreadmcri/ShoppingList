@@ -69,7 +69,7 @@ export default function AddItemForm({ onAdd, suggestions }: Props) {
               }}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 120)}
-              placeholder="Produit..."
+              placeholder="Item..."
               className="w-full h-12 px-4 rounded-2xl bg-slate-50 border-0 ring-1 ring-slate-200 focus:ring-2 focus:ring-violet-500/30 focus:bg-white transition-all text-slate-800 placeholder:text-slate-400 font-medium text-[16px]"
               autoComplete="off"
               enterKeyHint="done"
@@ -87,7 +87,7 @@ export default function AddItemForm({ onAdd, suggestions }: Props) {
                     <span className="font-medium text-slate-700 truncate">{suggestion.name}</span>
                     <span className="text-[11px] text-slate-400 ml-3 flex items-center gap-1 flex-shrink-0">
                       <Clock3 size={12} />
-                      {suggestion.category ?? 'Historique'}
+                      {suggestion.category ?? 'History'}
                     </span>
                   </button>
                 ))}

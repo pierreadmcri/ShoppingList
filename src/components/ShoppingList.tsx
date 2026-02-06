@@ -24,7 +24,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
         <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
           <ShoppingBag size={28} className="text-slate-400" />
         </div>
-        <p className="text-slate-500 font-medium">Liste vide</p>
+        <p className="text-slate-500 font-medium">Empty list</p>
       </div>
     )
   }
@@ -54,7 +54,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
         <div className="pt-6 border-t border-slate-200/50">
           <div className="flex items-center justify-between mb-4 px-1">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              Panier ({checked.length})
+              Cart ({checked.length})
             </h3>
 
             <button
@@ -62,7 +62,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
               className="pl-3 pr-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-200/40 active:bg-emerald-600 transition-all flex items-center gap-2 touch-press"
             >
               <Check size={14} strokeWidth={3} />
-              Valider
+              Confirm
             </button>
           </div>
 
@@ -112,8 +112,8 @@ function ItemRow({ item, onToggle, onDelete }: {
   return (
     <div className="relative overflow-hidden rounded-2xl">
       <div className="absolute inset-0 flex items-center justify-between px-4 text-xs font-bold uppercase tracking-wider pointer-events-none">
-        <span className="text-emerald-600">Glisser → cocher</span>
-        <span className="text-red-500">Supprimer ←</span>
+        <span className="text-emerald-600">Swipe → check</span>
+        <span className="text-red-500">Delete ←</span>
       </div>
 
       <div
