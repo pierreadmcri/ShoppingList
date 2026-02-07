@@ -155,7 +155,7 @@ export default function Home() {
                     <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200">
                         <ShoppingCart size={20} className="text-white" />
                     </div>
-                    <span className="font-bold text-lg text-slate-800 tracking-tight">MyShopList</span>
+                    <span className="font-bold text-lg text-slate-800 tracking-tight">❤️ Alisa & Pierre ShopList</span>
                 </div>
 
                 <button
