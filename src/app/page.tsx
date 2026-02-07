@@ -175,7 +175,7 @@ export default function Home() {
         )}
 
         <div className="space-y-6">
-            <AddItemForm onAdd={handleAddItem} suggestions={autocompleteSuggestions} />
+            <AddItemForm onAdd={handleAddItem} />
 
             <ShoppingList
               items={items}

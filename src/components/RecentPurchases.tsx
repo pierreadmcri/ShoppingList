@@ -9,43 +9,29 @@ type Props = {
 }
 
 export default function RecentPurchases({ purchases }: Props) {
-  if (purchases.length === 0) {
-    return (
-      <div className="card p-5">
-        <h2 className="text-base font-bold text-gray-700 mb-3 flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-100 to-blue-100 flex items-center justify-center shadow-inner">
-            <Clock size={16} className="text-sky-400" />
-          </div>
-          Recent Purchases
-        </h2>
-        <p className="text-violet-300 text-sm text-center py-4">No recent purchases yet</p>
-      </div>
-    )
-  }
+  if (purchases.length === 0) return null
 
   const grouped = groupByDate(purchases)
 
   return (
     <div className="card p-4">
-      <h2 className="text-base font-bold text-gray-700 mb-4 flex items-center gap-2.5 px-1">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-100 to-blue-100 flex items-center justify-center shadow-inner">
-          <Clock size={16} className="text-sky-400" />
-        </div>
-        Recent Purchases
-      </h2>
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Clock size={16} className="text-sky-500" />
+        <h2 className="text-sm font-bold text-slate-600">Recent Purchases</h2>
+      </div>
       <div className="space-y-4">
         {Object.entries(grouped).map(([date, items]) => (
           <div key={date}>
-            <p className="text-[11px] font-bold text-violet-300/70 uppercase tracking-wider mb-2 px-1">{date}</p>
-            <div className="space-y-0.5">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">{date}</p>
+            <div className="space-y-1">
               {items.map((item) => {
                 const cat = getCategoryInfo(item.category)
                 return (
-                  <div key={item.id} className="flex items-center gap-2.5 text-sm px-2 py-2 rounded-xl hover:bg-violet-50/30 transition-colors">
-                    <span className="text-base">{cat.emoji}</span>
-                    <span className="text-gray-600 flex-1 font-medium">{item.item_name}</span>
+                  <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-50/50 border border-slate-100/50">
+                    <span className="text-sm">{cat.emoji}</span>
+                    <span className="text-slate-600 text-sm flex-1 font-medium truncate">{item.item_name}</span>
                     {item.quantity > 1 && (
-                      <span className="text-[11px] text-violet-400 bg-violet-50/60 px-2 py-0.5 rounded-lg font-semibold">x{item.quantity}</span>
+                      <span className="text-[10px] text-violet-500 bg-violet-50 px-1.5 py-0.5 rounded font-bold">x{item.quantity}</span>
                     )}
                   </div>
                 )
@@ -62,9 +48,9 @@ function groupByDate(purchases: PurchaseHistory[]): Record<string, PurchaseHisto
   const groups: Record<string, PurchaseHistory[]> = {}
   for (const p of purchases) {
     const date = new Date(p.purchased_at).toLocaleDateString('en-US', {
-      weekday: 'long',
+      weekday: 'short',
       day: 'numeric',
-      month: 'long',
+      month: 'short',
     })
     if (!groups[date]) groups[date] = []
     groups[date].push(p)
