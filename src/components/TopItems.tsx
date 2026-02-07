@@ -18,7 +18,7 @@ export default function TopItems({ topItems, onQuickAdd }: Props) {
     <div className="card p-4">
       <div className="flex items-center gap-2 mb-3 px-1">
         <Trophy size={16} className="text-amber-500" />
-        <h2 className="text-sm font-bold text-slate-600">Top Produits</h2>
+        <h2 className="text-sm font-bold text-slate-600">Top Items</h2>
       </div>
       <div className="space-y-1">
         {topItems.map((item, index) => (
@@ -35,8 +35,6 @@ export default function TopItems({ topItems, onQuickAdd }: Props) {
             <span className="flex-1 text-sm text-slate-700 font-medium truncate">
               {item.item_name}
             </span>
-            
-            {/* Le bouton + est toujours visible mais discret */}
             <div className="w-6 h-6 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center opacity-100">
               <Plus size={12} strokeWidth={3} />
             </div>
