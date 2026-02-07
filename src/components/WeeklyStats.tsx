@@ -8,7 +8,7 @@ type Props = {
   purchases: PurchaseHistory[]
 }
 
-const numberFormatter = new Intl.NumberFormat('fr-FR')
+const numberFormatter = new Intl.NumberFormat('en-US')
 
 export default function WeeklyStats({ purchases }: Props) {
   const weekStart = getWeekStart(new Date())
@@ -21,18 +21,18 @@ export default function WeeklyStats({ purchases }: Props) {
   return (
     <div className="card p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-800">Stats de la semaine</h2>
+        <h2 className="font-semibold text-slate-800">Weekly stats</h2>
         <span className="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-600 font-semibold flex items-center gap-1">
           <CalendarDays size={12} />
-          Depuis lundi
+          Since Monday
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <StatTile icon={<Package size={14} />} label="Lignes achetées" value={numberFormatter.format(weeklyPurchases.length)} />
-        <StatTile icon={<Sparkles size={14} />} label="Unités totales" value={numberFormatter.format(totalUnits)} />
-        <StatTile icon={<Tags size={14} />} label="Catégorie #1" value={topCategory || '—'} />
-        <StatTile icon={<Package size={14} />} label="Produit #1" value={topItem || '—'} />
+        <StatTile icon={<Package size={14} />} label="Items purchased" value={numberFormatter.format(weeklyPurchases.length)} />
+        <StatTile icon={<Sparkles size={14} />} label="Total units" value={numberFormatter.format(totalUnits)} />
+        <StatTile icon={<Tags size={14} />} label="Top category" value={topCategory || '—'} />
+        <StatTile icon={<Package size={14} />} label="Top product" value={topItem || '—'} />
       </div>
     </div>
   )
