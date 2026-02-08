@@ -21,8 +21,8 @@ export default function WeeklyStats({ purchases }: Props) {
   return (
     <div className="card p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-800">Weekly stats</h2>
-        <span className="text-[11px] px-2 py-1 rounded-full bg-violet-50 text-violet-600 font-semibold flex items-center gap-1">
+        <h2 className="font-semibold text-slate-800 dark:text-slate-100">Weekly stats</h2>
+        <span className="text-[11px] px-2 py-1 rounded-full bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1">
           <CalendarDays size={12} />
           Since Monday
         </span>
@@ -40,10 +40,10 @@ export default function WeeklyStats({ purchases }: Props) {
 
 function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-3">
-      <div className="text-slate-400 mb-2">{icon}</div>
-      <p className="text-[11px] text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-semibold text-slate-700 truncate mt-1">{value}</p>
+    <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-3">
+      <div className="text-slate-400 dark:text-slate-500 mb-2">{icon}</div>
+      <p className="text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate mt-1">{value}</p>
     </div>
   )
 }
