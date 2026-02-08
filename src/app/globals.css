@@ -8,35 +8,41 @@
     -webkit-font-smoothing: antialiased;
   }
   body {
-    overscroll-behavior-y: none; /* Empêche le rebond élastique de toute la page */
+    overscroll-behavior-y: none;
     background: #f8fafc;
     color: #1e293b;
   }
+  .dark body {
+    background: #0f172a;
+    color: #e2e8f0;
+  }
+}
+
+:root {
+  --bg-main: #fcfaff;
+}
+.dark {
+  --bg-main: #0f172a;
 }
 
 @layer utilities {
-  /* Gestion de l'encoche (Notch) et de la barre du bas sur iPhone */
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
   .safe-top { padding-top: env(safe-area-inset-top, 0px); }
-  
-  /* Animation bouton tactile style iOS (effet d'enfoncement) */
+
   .touch-press {
     @apply active:scale-[0.96] transition-transform duration-100 ease-out;
   }
 
-  /* Cache la scrollbar mais garde le scroll */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-  /* Active l'inertie native sur iOS pour les listes horizontales */
   .ios-momentum-scroll {
     -webkit-overflow-scrolling: touch;
   }
-  
-  /* Animation d'entrée pour les items */
+
   .animate-enter {
     animation: enter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     opacity: 0;
@@ -48,21 +54,28 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Background Blobs (Optimisé mobile) */
+/* Background Blobs */
 .pastel-bg {
   position: relative;
   min-height: 100vh;
   background-color: #fcfaff;
+}
+.dark .pastel-bg {
+  background-color: #0f172a;
 }
 .pastel-bg::before,
 .pastel-bg::after {
   content: '';
   position: fixed;
   border-radius: 50%;
-  filter: blur(80px); /* Flou légèrement réduit pour la performance mobile */
+  filter: blur(80px);
   opacity: 0.4;
   z-index: 0;
   pointer-events: none;
+}
+.dark .pastel-bg::before,
+.dark .pastel-bg::after {
+  opacity: 0.15;
 }
 .pastel-bg::before {
   width: 80vw;
@@ -72,6 +85,9 @@
   right: -20vw;
   animation: float1 25s ease-in-out infinite;
 }
+.dark .pastel-bg::before {
+  background: radial-gradient(circle, #4c1d95, #5b21b6);
+}
 .pastel-bg::after {
   width: 70vw;
   height: 70vw;
@@ -79,6 +95,9 @@
   bottom: -10vw;
   left: -20vw;
   animation: float2 30s ease-in-out infinite reverse;
+}
+.dark .pastel-bg::after {
+  background: radial-gradient(circle, #831843, #9d174d);
 }
 
 @keyframes float1 {
@@ -90,8 +109,12 @@
   50% { transform: translate(30px, -20px); }
 }
 
-/* Style des cartes standardisé */
+/* Card style */
 .card {
   @apply bg-white/85 backdrop-blur-xl rounded-3xl border border-white/60 shadow-sm;
   box-shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.05);
+}
+.dark .card {
+  @apply bg-slate-800/85 border-slate-700/60;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
 }
