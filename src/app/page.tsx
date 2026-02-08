@@ -157,7 +157,7 @@ export default function Home() {
                     <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-none">
                         <ShoppingCart size={20} className="text-white" />
                     </div>
-                    <span className="font-bold text-lg text-slate-800 tracking-tight">❤️ Alisa & Pierre ShopList</span>
+                    <span className="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">❤️ Alisa & Pierre ShopList</span>
                 </div>
 
                 <div className="flex items-center gap-1">
