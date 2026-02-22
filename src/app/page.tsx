@@ -12,6 +12,15 @@ import WeeklyStats from '@/components/WeeklyStats'
 
 type TopItem = { item_name: string; count: number }
 
+const getWeekStartIso = () => {
+  const weekStart = new Date()
+  const day = weekStart.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  weekStart.setDate(weekStart.getDate() + diff)
+  weekStart.setHours(0, 0, 0, 0)
+  return weekStart.toISOString()
+}
+
 export default function Home() {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [recentPurchases, setRecentPurchases] = useState<PurchaseHistory[]>([])
@@ -30,41 +39,33 @@ export default function Home() {
     if (data) setItems(data)
   }, [])
 
-  const fetchRecentPurchases = useCallback(async () => {
-    const { data } = await supabase
-      .from('purchase_history')
-      .select('*')
-      .order('purchased_at', { ascending: false })
-      .limit(40)
-    if (data) setRecentPurchases(data)
-  }, [])
+  const refreshPurchaseInsights = useCallback(async () => {
+    const weekStartIso = getWeekStartIso()
 
-  const fetchWeeklyPurchases = useCallback(async () => {
-    const weekStart = new Date()
-    const day = weekStart.getDay()
-    const diff = day === 0 ? -6 : 1 - day
-    weekStart.setDate(weekStart.getDate() + diff)
-    weekStart.setHours(0, 0, 0, 0)
+    const [recentResult, weeklyResult, topItemsResult] = await Promise.all([
+      supabase
+        .from('purchase_history')
+        .select('*')
+        .order('purchased_at', { ascending: false })
+        .limit(40),
+      supabase
+        .from('purchase_history')
+        .select('*')
+        .gte('purchased_at', weekStartIso)
+        .order('purchased_at', { ascending: false }),
+      supabase.rpc('get_top_items', { limit_count: 10 }),
+    ])
 
-    const { data } = await supabase
-      .from('purchase_history')
-      .select('*')
-      .gte('purchased_at', weekStart.toISOString())
-      .order('purchased_at', { ascending: false })
-
-    if (data) setWeeklyPurchases(data)
-  }, [])
-
-  const fetchTopItems = useCallback(async () => {
-    const { data } = await supabase.rpc('get_top_items', { limit_count: 10 })
-    if (data) setTopItems(data)
+    if (recentResult.data) setRecentPurchases(recentResult.data)
+    if (weeklyResult.data) setWeeklyPurchases(weeklyResult.data)
+    if (topItemsResult.data) setTopItems(topItemsResult.data)
   }, [])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    await Promise.all([fetchItems(), fetchRecentPurchases(), fetchWeeklyPurchases(), fetchTopItems()])
+    await Promise.all([fetchItems(), refreshPurchaseInsights()])
     setLoading(false)
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
+  }, [fetchItems, refreshPurchaseInsights])
 
   useEffect(() => {
     async function load() {
@@ -77,15 +78,11 @@ export default function Home() {
     const channel = supabase
       .channel('shopping-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, fetchItems)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, () => {
-        fetchRecentPurchases()
-        fetchWeeklyPurchases()
-        fetchTopItems()
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, refreshPurchaseInsights)
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
+  }, [fetchItems, refreshPurchaseInsights])
 
   const handleAddItem = async (name: string, quantity: number, category: string) => {
     setError(null)
@@ -93,7 +90,7 @@ export default function Home() {
       .from('shopping_items')
       .insert({ name, quantity, category })
     if (err) setError(err.message)
-    else fetchItems()
+    else await fetchItems()
   }
 
   const handleToggle = async (id: string, checked: boolean) => {
@@ -121,9 +118,7 @@ export default function Home() {
     await supabase.from('shopping_items').delete().in('id', ids)
 
     setItems(prev => prev.filter(i => !i.checked))
-    fetchRecentPurchases()
-    fetchWeeklyPurchases()
-    fetchTopItems()
+    await refreshPurchaseInsights()
   }
 
   const handleQuickAdd = async (name: string) => {
