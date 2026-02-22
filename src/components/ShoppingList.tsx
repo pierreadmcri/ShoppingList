@@ -30,7 +30,14 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
   }
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-5 pb-28">
+      <div className="px-1">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Shopping list</h2>
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+          {unchecked.length} left • {checked.length} ready
+        </p>
+      </div>
+
       {total > 0 && (
         <div className="px-2 sticky top-[72px] z-10 bg-gradient-to-b from-[var(--bg-main)] via-[var(--bg-main)] to-transparent pb-4 pt-2">
           <div className="h-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden w-full">
@@ -51,23 +58,26 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
       </div>
 
       {checked.length > 0 && (
-        <div className="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
-          <div className="flex items-center justify-between mb-4 px-1">
+        <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex items-center justify-between mb-3 px-1">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
               In Cart ({checked.length})
             </h3>
-            <button
-              onClick={onValidatePurchases}
-              className="pl-3 pr-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-200/40 dark:shadow-none active:bg-emerald-600 transition-all flex items-center gap-2 touch-press"
-            >
-              <Check size={14} strokeWidth={3} />
-              Checkout
-            </button>
           </div>
           <div className="space-y-2 opacity-70">
             {checked.map((item) => (
               <SwipeableItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
             ))}
+          </div>
+
+          <div className="fixed bottom-3 left-4 right-4 z-20 max-w-2xl mx-auto safe-bottom">
+            <button
+              onClick={onValidatePurchases}
+              className="w-full py-3 bg-emerald-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-emerald-200/50 dark:shadow-none active:bg-emerald-600 transition-all flex items-center justify-center gap-2 touch-press"
+            >
+              <Check size={16} strokeWidth={3} />
+              Checkout {checked.length} item{checked.length > 1 ? 's' : ''}
+            </button>
           </div>
         </div>
       )}
