@@ -22,7 +22,7 @@ export default function RecentPurchases({ purchases }: Props) {
       <div className="space-y-4">
         {Object.entries(grouped).map(([date, items]) => (
           <div key={date}>
-            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-1">{date}</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 px-1">{date}</p>
             <div className="space-y-1">
               {items.map((item) => {
                 const cat = getCategoryInfo(item.category)
