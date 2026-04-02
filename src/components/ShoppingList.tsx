@@ -33,7 +33,14 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
     <div className="space-y-6 pb-4">
       {total > 0 && (
         <div className="px-2 sticky top-[72px] z-10 bg-gradient-to-b from-[var(--bg-main)] via-[var(--bg-main)] to-transparent pb-4 pt-2">
-          <div className="h-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden w-full">
+          <div
+            role="progressbar"
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Shopping progress: ${checked.length} of ${total} items checked`}
+            className="h-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden w-full"
+          >
             <div
               className="h-full bg-violet-500 transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
@@ -53,7 +60,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
       {checked.length > 0 && (
         <div className="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
           <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
               In Cart ({checked.length})
             </h3>
             <button
@@ -184,7 +191,7 @@ function SwipeableItemRow({ item, onToggle, onDelete }: {
             }`}>
               {item.name}
             </p>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {cat.name} {item.quantity > 1 && <span className="text-violet-500 font-bold ml-1">x{item.quantity}</span>}
             </p>
           </div>

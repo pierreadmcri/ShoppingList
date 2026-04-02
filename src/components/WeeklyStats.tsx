@@ -41,8 +41,8 @@ export default function WeeklyStats({ purchases }: Props) {
 function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-3">
-      <div className="text-slate-400 dark:text-slate-500 mb-2">{icon}</div>
-      <p className="text-[11px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">{label}</p>
+      <div className="text-slate-500 dark:text-slate-400 mb-2">{icon}</div>
+      <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
       <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate mt-1">{value}</p>
     </div>
   )
