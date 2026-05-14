@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { PurchaseHistory } from '@/lib/supabase'
 import { CalendarDays, Package, Sparkles, Tags } from 'lucide-react'
+import { getCategoryInfo } from '@/lib/categories'
 
 type Props = {
   purchases: PurchaseHistory[]
@@ -17,22 +18,59 @@ export default function WeeklyStats({ purchases }: Props) {
   const totalUnits = weeklyPurchases.reduce((sum, purchase) => sum + purchase.quantity, 0)
   const topCategory = getTopKey(weeklyPurchases.map((purchase) => purchase.category))
   const topItem = getTopKey(weeklyPurchases.map((purchase) => purchase.item_name))
+  const topCategoryInfo = topCategory ? getCategoryInfo(topCategory) : null
 
   return (
-    <div className="card p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-800 dark:text-slate-100">Weekly stats</h2>
-        <span className="text-[11px] px-2 py-1 rounded-full bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1">
-          <CalendarDays size={12} />
-          Since Monday
-        </span>
+    <div className="card overflow-hidden">
+      {/* Hero block */}
+      <div className="relative p-5 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-semibold uppercase tracking-widest opacity-80">
+            This week
+          </span>
+          <span className="text-[10px] px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm font-semibold flex items-center gap-1">
+            <CalendarDays size={11} />
+            Since Monday
+          </span>
+        </div>
+
+        <div className="flex items-end gap-2 mb-1">
+          <span className="text-5xl font-extrabold tracking-tight leading-none">
+            {numberFormatter.format(weeklyPurchases.length)}
+          </span>
+          <span className="text-sm font-medium opacity-90 mb-1.5">
+            {weeklyPurchases.length === 1 ? 'item bought' : 'items bought'}
+          </span>
+        </div>
+        <p className="text-xs opacity-80">
+          {totalUnits > 0
+            ? `${numberFormatter.format(totalUnits)} total units in cart`
+            : 'No purchases yet this week'}
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <StatTile icon={<Package size={14} />} label="Items purchased" value={numberFormatter.format(weeklyPurchases.length)} />
-        <StatTile icon={<Sparkles size={14} />} label="Total units" value={numberFormatter.format(totalUnits)} />
-        <StatTile icon={<Tags size={14} />} label="Top category" value={topCategory || '—'} />
-        <StatTile icon={<Package size={14} />} label="Top product" value={topItem || '—'} />
+      {/* Stats tiles */}
+      <div className="grid grid-cols-2 gap-2 p-3">
+        <StatTile
+          icon={<Package size={14} />}
+          label="Items"
+          value={numberFormatter.format(weeklyPurchases.length)}
+        />
+        <StatTile
+          icon={<Sparkles size={14} />}
+          label="Units"
+          value={numberFormatter.format(totalUnits)}
+        />
+        <StatTile
+          icon={<Tags size={14} />}
+          label="Top category"
+          value={topCategoryInfo ? `${topCategoryInfo.emoji} ${topCategoryInfo.name}` : '—'}
+        />
+        <StatTile
+          icon={<Package size={14} />}
+          label="Top product"
+          value={topItem || '—'}
+        />
       </div>
     </div>
   )
@@ -40,10 +78,10 @@ export default function WeeklyStats({ purchases }: Props) {
 
 function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/60 p-3">
-      <div className="text-slate-500 dark:text-slate-400 mb-2">{icon}</div>
-      <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 truncate mt-1">{value}</p>
+    <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 p-3">
+      <div className="text-violet-500 dark:text-violet-400 mb-1.5">{icon}</div>
+      <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate mt-0.5">{value}</p>
     </div>
   )
 }
