@@ -9,6 +9,7 @@ import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
 import TopItems from '@/components/TopItems'
 import WeeklyStats from '@/components/WeeklyStats'
+import BottomNav, { View } from '@/components/BottomNav'
 
 type TopItem = { item_name: string; count: number }
 
@@ -19,6 +20,7 @@ export default function Home() {
   const [topItems, setTopItems] = useState<TopItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [view, setView] = useState<View>('list')
   const { theme, toggle: toggleTheme } = useTheme()
 
   const fetchItems = useCallback(async () => {
@@ -128,6 +130,7 @@ export default function Home() {
 
   const handleQuickAdd = async (name: string) => {
     await handleAddItem(name, 1, 'Other')
+    setView('list')
   }
 
   const autocompleteSuggestions = useMemo(() => {
@@ -148,60 +151,78 @@ export default function Home() {
       }))
   }, [recentPurchases, weeklyPurchases])
 
+  const uncheckedCount = items.filter(i => !i.checked).length
+
   return (
     <div className="min-h-screen pastel-bg">
-      <header className="sticky top-0 z-20 safe-top transition-all duration-200">
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/30 pb-2 pt-2 px-4">
-            <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-none">
-                        <ShoppingCart size={20} className="text-white" />
-                    </div>
-                    <h1 className="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight">Alisa & Pierre ShopList</h1>
-                </div>
-
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={toggleTheme}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
-                        aria-label="Toggle dark mode"
-                    >
-                        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-                    </button>
-                    <button
-                        onClick={fetchAll}
-                        className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
-                        aria-label="Refresh"
-                    >
-                        <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-                    </button>
-                </div>
+      <header className="sticky top-0 z-20 safe-top">
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/30 px-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-none flex-shrink-0">
+                <ShoppingCart size={18} className="text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="font-bold text-[15px] text-slate-800 dark:text-slate-100 tracking-tight leading-tight truncate">
+                  {view === 'list' ? 'Alisa & Pierre' : 'Stats'}
+                </h1>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate">
+                  {view === 'list'
+                    ? uncheckedCount === 0
+                      ? 'No items to buy'
+                      : `${uncheckedCount} ${uncheckedCount > 1 ? 'items' : 'item'} to buy`
+                    : 'Your shopping insights'}
+                </p>
+              </div>
             </div>
+
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={toggleTheme}
+                className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
+                aria-label="Toggle dark mode"
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                onClick={fetchAll}
+                className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
+                aria-label="Refresh"
+              >
+                <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 safe-bottom">
+      <main className="max-w-2xl mx-auto px-4 pt-4 pb-28 safe-bottom relative">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-800/30">{error}</div>
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-800/30">
+            {error}
+          </div>
         )}
 
-        <div className="space-y-6">
+        {view === 'list' ? (
+          <div className="space-y-5 animate-enter">
             <AddItemForm onAdd={handleAddItem} suggestions={autocompleteSuggestions} />
-
             <ShoppingList
               items={items}
               onToggle={handleToggle}
               onDelete={handleDelete}
               onValidatePurchases={handleValidatePurchases}
             />
-
-            <div className="grid grid-cols-1 gap-4 pt-8 border-t border-slate-200/50 dark:border-slate-700/50">
-                <WeeklyStats purchases={weeklyPurchases} />
-                <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
-                <RecentPurchases purchases={recentPurchases} />
-            </div>
-        </div>
+          </div>
+        ) : (
+          <div className="space-y-4 animate-enter">
+            <WeeklyStats purchases={weeklyPurchases} />
+            <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
+            <RecentPurchases purchases={recentPurchases} />
+          </div>
+        )}
       </main>
+
+      <BottomNav view={view} onChange={setView} listBadge={uncheckedCount} />
     </div>
   )
 }

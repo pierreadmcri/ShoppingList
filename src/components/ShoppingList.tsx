@@ -32,7 +32,7 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
   return (
     <div className="space-y-6 pb-4">
       {total > 0 && (
-        <div className="px-2 sticky top-[72px] z-10 bg-gradient-to-b from-[var(--bg-main)] via-[var(--bg-main)] to-transparent pb-4 pt-2">
+        <div className="px-2 sticky top-14 z-10 bg-gradient-to-b from-[var(--bg-main)] via-[var(--bg-main)] to-transparent pb-3 pt-2">
           <div
             role="progressbar"
             aria-valuenow={progress}
