@@ -7,17 +7,13 @@ import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
-import TopItems from '@/components/TopItems'
 import WeeklyStats from '@/components/WeeklyStats'
 import BottomNav, { View } from '@/components/BottomNav'
-
-type TopItem = { item_name: string; count: number }
 
 export default function Home() {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [recentPurchases, setRecentPurchases] = useState<PurchaseHistory[]>([])
   const [weeklyPurchases, setWeeklyPurchases] = useState<PurchaseHistory[]>([])
-  const [topItems, setTopItems] = useState<TopItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('list')
@@ -57,16 +53,11 @@ export default function Home() {
     if (data) setWeeklyPurchases(data)
   }, [])
 
-  const fetchTopItems = useCallback(async () => {
-    const { data } = await supabase.rpc('get_top_items', { limit_count: 10 })
-    if (data) setTopItems(data)
-  }, [])
-
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    await Promise.all([fetchItems(), fetchRecentPurchases(), fetchWeeklyPurchases(), fetchTopItems()])
+    await Promise.all([fetchItems(), fetchRecentPurchases(), fetchWeeklyPurchases()])
     setLoading(false)
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
+  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases])
 
   useEffect(() => {
     async function load() {
@@ -82,12 +73,11 @@ export default function Home() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, () => {
         fetchRecentPurchases()
         fetchWeeklyPurchases()
-        fetchTopItems()
       })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases, fetchTopItems])
+  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases])
 
   const handleAddItem = async (name: string, quantity: number, category: string) => {
     setError(null)
@@ -125,12 +115,6 @@ export default function Home() {
     setItems(prev => prev.filter(i => !i.checked))
     fetchRecentPurchases()
     fetchWeeklyPurchases()
-    fetchTopItems()
-  }
-
-  const handleQuickAdd = async (name: string) => {
-    await handleAddItem(name, 1, 'Other')
-    setView('list')
   }
 
   const autocompleteSuggestions = useMemo(() => {
@@ -216,7 +200,6 @@ export default function Home() {
         ) : (
           <div className="space-y-4 animate-enter">
             <WeeklyStats purchases={weeklyPurchases} />
-            <TopItems topItems={topItems} onQuickAdd={handleQuickAdd} />
             <RecentPurchases purchases={recentPurchases} />
           </div>
         )}
