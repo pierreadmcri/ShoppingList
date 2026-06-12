@@ -15,7 +15,6 @@ A smart shopping list app with live checkout validation.
 - Check off items while shopping in-store
 - Confirm purchases (moves to history)
 - Recent purchases history
-- Top 20 most bought items (quick-add with one click)
 - Real-time sync across devices via Supabase Realtime
 
 ## Setup
