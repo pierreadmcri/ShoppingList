@@ -137,14 +137,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen mediterranean-bg">
-      <header className="relative z-20 safe-top px-5 pt-4">
+      <header className="relative z-20 safe-top px-5 pt-3">
         <div className="max-w-2xl mx-auto flex items-start justify-between">
-          <div className="min-w-0 pt-1">
+          <div className="min-w-0">
             <p className="eyebrow mb-1">{view === 'list' ? 'Our household list' : 'Our household journal'}</p>
-            <h1 className="display-title text-[34px] leading-[0.98] text-ink dark:text-cream tracking-[-0.035em]">
-              {view === 'list' ? <>Hello,<br />Alisa &amp; Pierre</> : <>Your habits<br />at a glance</>}
+            <h1 className="display-title text-[27px] leading-tight text-ink tracking-[-0.025em]">
+              {view === 'list' ? 'Alisa & Pierre' : 'Stats'}
             </h1>
-            <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-olive dark:text-sage">
+            <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-olive">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-terracotta text-white">A</span>
               <span className="-ml-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-cream bg-cobalt text-white dark:border-night">P</span>
               <UsersRound size={15} />
