@@ -7,6 +7,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: { persistSession: false },
 })
 
+export const appBackgroundUrl = supabase.storage
+  .from('app-assets')
+  .getPublicUrl('backgrounds/mediterranean-app-background-V1.png')
+  .data.publicUrl
+
 export type ShoppingItem = {
   id: string
   name: string

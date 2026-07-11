@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, type CSSProperties } from 'react'
 import { RefreshCw, UsersRound } from 'lucide-react'
-import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
+import { supabase, appBackgroundUrl, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
@@ -136,7 +136,12 @@ export default function Home() {
   const uncheckedCount = items.filter(i => !i.checked).length
 
   return (
-    <div className="min-h-screen mediterranean-bg">
+    <div
+      className="min-h-screen mediterranean-bg"
+      style={{
+        '--app-background-image': `url("${appBackgroundUrl}")`,
+      } as CSSProperties}
+    >
       <header className="relative z-20 safe-top px-5 pt-3">
         <div className="max-w-2xl mx-auto flex items-start justify-between">
           <div className="min-w-0">

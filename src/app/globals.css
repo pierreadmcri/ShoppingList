@@ -87,28 +87,25 @@
 
 .mediterranean-bg {
   position: relative;
+  isolation: isolate;
   min-height: 100vh;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 92% 5%, rgba(201, 75, 38, 0.12), transparent 21rem),
-    linear-gradient(180deg, #fbf7ed 0%, var(--cream) 45%, #f2ead9 100%);
+  background-color: var(--cream);
 }
 
 .mediterranean-bg::before {
   content: '';
-  position: absolute;
-  right: -38px;
-  top: 72px;
-  width: 132px;
-  height: 62px;
-  opacity: 0.13;
-  transform: rotate(-14deg);
+  position: fixed;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse at 15% 50%, var(--olive) 0 13%, transparent 14%),
-    radial-gradient(ellipse at 40% 35%, var(--olive) 0 13%, transparent 14%),
-    radial-gradient(ellipse at 65% 50%, var(--olive) 0 13%, transparent 14%),
-    radial-gradient(ellipse at 88% 30%, var(--olive) 0 12%, transparent 13%);
+  background-color: var(--cream);
+  background-image:
+    linear-gradient(rgba(246, 240, 226, 0.12), rgba(246, 240, 226, 0.24)),
+    var(--app-background-image);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .add-panel,
