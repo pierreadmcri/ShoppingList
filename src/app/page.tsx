@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { ShoppingCart, RefreshCw, Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/lib/theme'
+import { RefreshCw, UsersRound } from 'lucide-react'
 import { supabase, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
@@ -17,7 +16,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('list')
-  const { theme, toggle: toggleTheme } = useTheme()
 
   const fetchItems = useCallback(async () => {
     const { data } = await supabase
@@ -138,49 +136,35 @@ export default function Home() {
   const uncheckedCount = items.filter(i => !i.checked).length
 
   return (
-    <div className="min-h-screen pastel-bg">
-      <header className="sticky top-0 z-20 safe-top">
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/30 px-4">
-          <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200 dark:shadow-none flex-shrink-0">
-                <ShoppingCart size={18} className="text-white" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="font-bold text-[15px] text-slate-800 dark:text-slate-100 tracking-tight leading-tight truncate">
-                  {view === 'list' ? 'Alisa & Pierre' : 'Stats'}
-                </h1>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate">
-                  {view === 'list'
-                    ? uncheckedCount === 0
-                      ? 'No items to buy'
-                      : `${uncheckedCount} ${uncheckedCount > 1 ? 'items' : 'item'} to buy`
-                    : 'Your shopping insights'}
-                </p>
-              </div>
+    <div className="min-h-screen mediterranean-bg">
+      <header className="relative z-20 safe-top px-5 pt-4">
+        <div className="max-w-2xl mx-auto flex items-start justify-between">
+          <div className="min-w-0 pt-1">
+            <p className="eyebrow mb-1">{view === 'list' ? 'Our household list' : 'Our household journal'}</p>
+            <h1 className="display-title text-[34px] leading-[0.98] text-ink dark:text-cream tracking-[-0.035em]">
+              {view === 'list' ? <>Hello,<br />Alisa &amp; Pierre</> : <>Your habits<br />at a glance</>}
+            </h1>
+            <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-olive dark:text-sage">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-terracotta text-white">A</span>
+              <span className="-ml-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-cream bg-cobalt text-white dark:border-night">P</span>
+              <UsersRound size={15} />
+              <span>{view === 'list' ? `${uncheckedCount} to pick up` : 'Shared list'}</span>
             </div>
+          </div>
 
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={toggleTheme}
-                className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
-                aria-label="Toggle dark mode"
-              >
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
+          <div className="flex items-center flex-shrink-0 rounded-full border border-gold/30 bg-cream/75 p-1">
               <button
                 onClick={fetchAll}
-                className="w-10 h-10 flex items-center justify-center text-slate-400 dark:text-slate-500 active:text-violet-600 dark:active:text-violet-400 active:bg-violet-50 dark:active:bg-violet-900/20 rounded-xl transition-all touch-press"
+                className="w-9 h-9 flex items-center justify-center text-olive dark:text-sage active:text-terracotta rounded-full transition-all touch-press"
                 aria-label="Refresh"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
               </button>
-            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pt-4 pb-28 safe-bottom relative">
+      <main className="max-w-2xl mx-auto px-4 pt-5 pb-32 safe-bottom relative z-10">
         {error && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm border border-red-100 dark:border-red-800/30">
             {error}

@@ -4,56 +4,55 @@
 
 @layer base {
   :root {
-    --color-primary: 139 92 246;       /* violet-500 */
-    --color-primary-dark: 124 58 237;  /* violet-600 */
-    --color-bg-main: #fcfaff;
-    --color-bg-card: rgba(255, 255, 255, 0.85);
-    --color-border-card: rgba(255, 255, 255, 0.6);
-    --color-text-primary: #1e293b;
-    --color-text-secondary: #64748b;   /* slate-500 — better contrast than slate-400 */
-    --color-text-muted: #94a3b8;       /* slate-400 */
-  }
-  .dark {
-    --color-bg-main: #0f172a;
-    --color-bg-card: rgba(30, 41, 59, 0.85);
-    --color-border-card: rgba(51, 65, 85, 0.6);
-    --color-text-primary: #e2e8f0;
-    --color-text-secondary: #94a3b8;
-    --color-text-muted: #64748b;
+    --cream: #f6f0e2;
+    --sand: #e9ddc5;
+    --gold: #b99357;
+    --terracotta: #c94b26;
+    --olive: #4f5d20;
+    --sage: #8b9764;
+    --cobalt: #24559a;
+    --ink: #191d14;
+    --taupe: #827b6d;
   }
 
   html {
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
+    background: var(--cream);
   }
+
   body {
     overscroll-behavior-y: none;
-    background: var(--color-bg-main);
-    color: var(--color-text-primary);
+    background: var(--cream);
+    color: var(--ink);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
-  /* Smooth theme transition */
-  html.theme-transition,
-  html.theme-transition *,
-  html.theme-transition *::before,
-  html.theme-transition *::after {
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.15s ease !important;
-  }
-
-  /* Focus-visible for keyboard accessibility */
   *:focus-visible {
-    outline: 2px solid rgb(var(--color-primary));
+    outline: 2px solid var(--terracotta);
     outline-offset: 2px;
-    border-radius: 4px;
   }
 }
 
 @layer utilities {
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
   .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+  .text-cream { color: var(--cream); }
+  .text-ink { color: var(--ink); }
+  .text-taupe { color: var(--taupe); }
+  .text-olive { color: var(--olive); }
+  .text-sage { color: var(--sage); }
+  .text-terracotta { color: var(--terracotta); }
+  .text-gold { color: var(--gold); }
+  .bg-cream { background-color: var(--cream); }
+  .bg-sand { background-color: var(--sand); }
+  .bg-terracotta { background-color: var(--terracotta); }
+  .bg-olive { background-color: var(--olive); }
+  .bg-cobalt { background-color: var(--cobalt); }
+  .border-gold { border-color: var(--gold); }
 
   .touch-press {
-    @apply active:scale-[0.96] transition-transform duration-100 ease-out;
+    @apply active:scale-[0.97] transition-transform duration-100 ease-out;
   }
 
   .scrollbar-hide {
@@ -62,14 +61,10 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-  .ios-momentum-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
-
   .animate-enter {
-    animation: enter 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: enter 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
 }
 
@@ -77,67 +72,77 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Background Blobs */
-.pastel-bg {
+.display-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+}
+
+.eyebrow {
+  color: var(--terracotta);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.mediterranean-bg {
   position: relative;
   min-height: 100vh;
-  background-color: var(--color-bg-main);
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 92% 5%, rgba(201, 75, 38, 0.12), transparent 21rem),
+    linear-gradient(180deg, #fbf7ed 0%, var(--cream) 45%, #f2ead9 100%);
 }
-.pastel-bg::before,
-.pastel-bg::after {
+
+.mediterranean-bg::before {
   content: '';
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
-  z-index: 0;
+  position: absolute;
+  right: -38px;
+  top: 72px;
+  width: 132px;
+  height: 62px;
+  opacity: 0.13;
+  transform: rotate(-14deg);
   pointer-events: none;
-}
-.dark .pastel-bg::before,
-.dark .pastel-bg::after {
-  opacity: 0.15;
-}
-.pastel-bg::before {
-  width: 80vw;
-  height: 80vw;
-  background: radial-gradient(circle, #ddd6fe, #c4b5fd);
-  top: -20vw;
-  right: -20vw;
-  animation: float1 25s ease-in-out infinite;
-}
-.dark .pastel-bg::before {
-  background: radial-gradient(circle, #4c1d95, #5b21b6);
-}
-.pastel-bg::after {
-  width: 70vw;
-  height: 70vw;
-  background: radial-gradient(circle, #fbcfe8, #f9a8d4);
-  bottom: -10vw;
-  left: -20vw;
-  animation: float2 30s ease-in-out infinite reverse;
-}
-.dark .pastel-bg::after {
-  background: radial-gradient(circle, #831843, #9d174d);
+  background:
+    radial-gradient(ellipse at 15% 50%, var(--olive) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 40% 35%, var(--olive) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 65% 50%, var(--olive) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 88% 30%, var(--olive) 0 12%, transparent 13%);
 }
 
-@keyframes float1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-20px, 30px); }
-}
-@keyframes float2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(30px, -20px); }
-}
-
-/* Card style */
+.add-panel,
+.list-shell,
 .card {
-  background: var(--color-bg-card);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: 1.5rem;
-  border: 1px solid var(--color-border-card);
-  box-shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.05);
+  background: rgba(255, 252, 245, 0.9);
+  border: 1px solid rgba(185, 147, 87, 0.44);
+  box-shadow: 0 12px 28px -24px rgba(76, 53, 20, 0.55);
 }
-.dark .card {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+
+.add-panel {
+  border-radius: 1.35rem;
+  padding: 0.75rem;
+}
+
+.list-shell,
+.card {
+  border-radius: 1.5rem;
+}
+
+.empty-state {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.bottom-bar {
+  border: 1px solid rgba(185, 147, 87, 0.42);
+  border-radius: 1.25rem;
+  background: rgba(255, 252, 245, 0.92);
+  box-shadow: 0 12px 36px -14px rgba(67, 45, 13, 0.36);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }

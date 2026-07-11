@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { Check, Trash2, ShoppingBag } from 'lucide-react'
+import { Check, Trash2, ShoppingBasket, ArrowRight } from 'lucide-react'
 import { ShoppingItem } from '@/lib/supabase'
 import { getCategoryInfo } from '@/lib/categories'
 
@@ -20,36 +20,39 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
 
   if (total === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center opacity-60">
-        <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-          <ShoppingBag size={28} className="text-slate-400" />
+      <div className="empty-state">
+        <div className="w-16 h-16 bg-sand dark:bg-olive/20 rounded-full flex items-center justify-center mb-4">
+          <ShoppingBasket size={27} className="text-terracotta" />
         </div>
-        <p className="text-slate-500 dark:text-slate-400 font-medium">List is empty</p>
+        <p className="display-title text-xl text-ink dark:text-cream">Your list is empty</p>
+        <p className="mt-1 text-sm text-taupe dark:text-sage">Add anything your household needs.</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-4 pb-4">
       {total > 0 && (
-        <div className="px-2 sticky top-14 z-10 bg-gradient-to-b from-[var(--bg-main)] via-[var(--bg-main)] to-transparent pb-3 pt-2">
+        <div className="flex items-center gap-3 px-1">
+          <ShoppingBasket size={20} className="text-terracotta" />
+          <h2 className="display-title text-[22px] text-ink dark:text-cream">{unchecked.length} to pick up</h2>
           <div
             role="progressbar"
             aria-valuenow={progress}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label={`Shopping progress: ${checked.length} of ${total} items checked`}
-            className="h-1.5 bg-slate-200/60 dark:bg-slate-700/60 rounded-full overflow-hidden w-full"
+            className="ml-auto h-1.5 bg-sand dark:bg-olive/30 rounded-full overflow-hidden w-20"
           >
             <div
-              className="h-full bg-violet-500 transition-all duration-500 ease-out"
+              className="h-full bg-terracotta transition-all duration-500 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="list-shell overflow-hidden">
         {unchecked.map((item, i) => (
           <div key={item.id} className="animate-enter" style={{ animationDelay: `${i * 0.03}s` }}>
             <SwipeableItemRow item={item} onToggle={onToggle} onDelete={onDelete} />
@@ -58,24 +61,32 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
       </div>
 
       {checked.length > 0 && (
-        <div className="pt-6 border-t border-slate-200/50 dark:border-slate-700/50">
+        <div className="pt-2">
           <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-              In Cart ({checked.length})
+            <h3 className="text-xs font-bold text-olive dark:text-sage uppercase tracking-widest">
+              In cart ({checked.length})
             </h3>
             <button
               onClick={onValidatePurchases}
-              className="pl-3 pr-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-full shadow-lg shadow-emerald-200/40 dark:shadow-none active:bg-emerald-600 transition-all flex items-center gap-2 touch-press"
+              className="hidden"
             >
               <Check size={14} strokeWidth={3} />
-              Checkout
+              Complete
             </button>
           </div>
-          <div className="space-y-2 opacity-70">
+          <div className="list-shell overflow-hidden opacity-70">
             {checked.map((item) => (
               <SwipeableItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
             ))}
           </div>
+          <button
+            onClick={onValidatePurchases}
+            className="mt-4 w-full h-14 rounded-2xl bg-terracotta text-white font-bold flex items-center justify-between px-5 shadow-[0_10px_24px_-12px_rgba(201,75,38,0.8)] touch-press"
+          >
+            <ShoppingBasket size={21} />
+            <span>Complete shopping</span>
+            <ArrowRight size={21} />
+          </button>
         </div>
       )}
     </div>
@@ -140,15 +151,15 @@ function SwipeableItemRow({ item, onToggle, onDelete }: {
   const showDeleteBg = offsetX < -30
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
+    <div className="relative overflow-hidden border-b border-gold/20 last:border-b-0">
       {/* Swipe backgrounds */}
-      <div className={`absolute inset-0 flex items-center px-5 rounded-2xl transition-opacity ${showCheckBg ? 'opacity-100' : 'opacity-0'} ${isChecked ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'}`}>
+      <div className={`absolute inset-0 flex items-center px-5 transition-opacity ${showCheckBg ? 'opacity-100' : 'opacity-0'} ${isChecked ? 'bg-sand dark:bg-olive/30' : 'bg-sage/30 dark:bg-olive/40'}`}>
         <Check size={20} className={isChecked ? 'text-amber-500' : 'text-emerald-500'} strokeWidth={3} />
         <span className={`ml-2 text-xs font-bold ${isChecked ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
           {isChecked ? 'Uncheck' : 'Check'}
         </span>
       </div>
-      <div className={`absolute inset-0 flex items-center justify-end px-5 rounded-2xl transition-opacity ${showDeleteBg ? 'opacity-100' : 'opacity-0'} bg-red-100 dark:bg-red-900/30`}>
+      <div className={`absolute inset-0 flex items-center justify-end px-5 transition-opacity ${showDeleteBg ? 'opacity-100' : 'opacity-0'} bg-red-100 dark:bg-red-900/30`}>
         <span className="mr-2 text-xs font-bold text-red-600 dark:text-red-400">Delete</span>
         <Trash2 size={20} className="text-red-500" />
       </div>
@@ -163,18 +174,18 @@ function SwipeableItemRow({ item, onToggle, onDelete }: {
           transform: `translateX(${offsetX}px)`,
           transition: swiping ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
         }}
-        className={`flex items-center gap-3 p-3 pl-4 rounded-2xl border transition-colors duration-200 ${
+        className={`flex items-center gap-3 min-h-[72px] px-4 py-3 transition-colors duration-200 ${
           isChecked
-            ? 'bg-slate-50 dark:bg-slate-800/50 border-transparent'
-            : 'bg-white dark:bg-slate-800 border-white dark:border-slate-700 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] dark:shadow-none'
+            ? 'bg-sand/40 dark:bg-olive/15'
+            : 'bg-cream/85 dark:bg-night/80'
         }`}
       >
         <button
           onClick={() => onToggle(item.id, !isChecked)}
-          className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all touch-press ${
+          className={`w-7 h-7 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all touch-press ${
             isChecked
-              ? 'bg-emerald-500 border-emerald-500 scale-95'
-              : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700'
+              ? 'bg-olive border-olive scale-95'
+              : 'border-gold/60 dark:border-sage/50 bg-transparent'
           }`}
         >
           {isChecked && <Check size={14} className="text-white" strokeWidth={4} />}
@@ -184,15 +195,15 @@ function SwipeableItemRow({ item, onToggle, onDelete }: {
           className="flex-1 flex items-center gap-3 overflow-hidden min-w-0 py-1 cursor-pointer"
           onClick={() => onToggle(item.id, !isChecked)}
         >
-          <span className="text-lg flex-shrink-0">{cat.emoji}</span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sand/60 dark:bg-olive/25 text-xl flex-shrink-0">{cat.emoji}</span>
           <div className="min-w-0 flex-1">
             <p className={`font-semibold text-[15px] truncate transition-all ${
-              isChecked ? 'text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600' : 'text-slate-700 dark:text-slate-200'
+              isChecked ? 'text-taupe line-through' : 'text-ink dark:text-cream'
             }`}>
               {item.name}
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              {cat.name} {item.quantity > 1 && <span className="text-violet-500 font-bold ml-1">x{item.quantity}</span>}
+            <p className="text-[11px] text-taupe dark:text-sage">
+              {cat.name} <span className="text-olive dark:text-sage font-bold ml-1">×{item.quantity}</span>
             </p>
           </div>
         </div>
@@ -202,7 +213,7 @@ function SwipeableItemRow({ item, onToggle, onDelete }: {
             e.stopPropagation()
             onDelete(item.id)
           }}
-          className="w-10 h-10 flex items-center justify-center text-slate-300 dark:text-slate-600 active:text-red-500 active:bg-red-50 dark:active:bg-red-900/20 rounded-xl transition-colors touch-press"
+          className="w-10 h-10 flex items-center justify-center text-gold/60 dark:text-sage/40 active:text-red-500 rounded-xl transition-colors touch-press"
         >
           <Trash2 size={18} />
         </button>

@@ -23,7 +23,7 @@ export default function WeeklyStats({ purchases }: Props) {
   return (
     <div className="card overflow-hidden">
       {/* Hero block */}
-      <div className="relative p-5 bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+      <div className="relative p-5 bg-terracotta text-white">
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold uppercase tracking-widest opacity-80">
             This week
@@ -39,12 +39,12 @@ export default function WeeklyStats({ purchases }: Props) {
             {numberFormatter.format(weeklyPurchases.length)}
           </span>
           <span className="text-sm font-medium opacity-90 mb-1.5">
-            {weeklyPurchases.length === 1 ? 'item bought' : 'items bought'}
+            {weeklyPurchases.length === 1 ? 'item purchased' : 'items purchased'}
           </span>
         </div>
         <p className="text-xs opacity-80">
           {totalUnits > 0
-            ? `${numberFormatter.format(totalUnits)} total units in cart`
+            ? `${numberFormatter.format(totalUnits)} total units`
             : 'No purchases yet this week'}
         </p>
       </div>
@@ -78,10 +78,10 @@ export default function WeeklyStats({ purchases }: Props) {
 
 function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 p-3">
-      <div className="text-violet-500 dark:text-violet-400 mb-1.5">{icon}</div>
-      <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate mt-0.5">{value}</p>
+    <div className="rounded-2xl border border-gold/25 bg-sand/30 p-3">
+      <div className="text-terracotta mb-1.5">{icon}</div>
+      <p className="text-[10px] text-taupe uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-bold text-ink truncate mt-0.5">{value}</p>
     </div>
   )
 }

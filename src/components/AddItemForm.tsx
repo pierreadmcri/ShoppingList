@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Plus, ChevronDown } from 'lucide-react'
+import { Plus, ChevronDown, ScanLine } from 'lucide-react'
 import { CATEGORIES, getCategoryInfo } from '@/lib/categories'
 
 type Suggestion = { name: string; category: string }
@@ -59,9 +59,17 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
   const selectedCatInfo = getCategoryInfo(category)
 
   return (
-    <div className="card p-3" ref={wrapperRef}>
+    <div className="add-panel" ref={wrapperRef}>
       <form onSubmit={handleSubmit}>
-        <div className="flex gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="submit"
+            disabled={loading || !name.trim()}
+            className="h-12 w-12 flex-shrink-0 bg-terracotta disabled:bg-sand disabled:text-taupe text-white rounded-full flex items-center justify-center transition-all shadow-sm disabled:shadow-none touch-press"
+            aria-label="Add item"
+          >
+            <Plus size={24} strokeWidth={2.25} />
+          </button>
           <div className="flex-1 relative">
             <input
               ref={inputRef}
@@ -72,15 +80,15 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
                 setShowSuggestions(true)
               }}
               onFocus={() => setShowSuggestions(true)}
-              placeholder="Add item..."
-              className="w-full h-12 px-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border-0 ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-violet-500/30 focus:bg-white dark:focus:bg-slate-700 transition-all text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium text-[16px]"
+              placeholder="Add something"
+              className="w-full h-12 px-2 bg-transparent border-0 outline-none text-ink dark:text-cream placeholder:text-taupe dark:placeholder:text-sage/60 font-medium text-[16px]"
               autoComplete="off"
               enterKeyHint="done"
             />
 
             {/* Autocomplete dropdown */}
             {showSuggestions && filtered.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 z-30 max-h-52 overflow-y-auto scrollbar-hide">
+              <div className="absolute top-full -left-14 right-0 mt-3 bg-cream dark:bg-night rounded-2xl shadow-xl border border-gold/30 z-30 max-h-52 overflow-y-auto scrollbar-hide">
                 {filtered.slice(0, 8).map((s) => {
                   const cat = getCategoryInfo(s.category)
                   return (
@@ -88,11 +96,11 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
                       key={s.name}
                       type="button"
                       onClick={() => handleSelectSuggestion(s)}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-violet-50 dark:hover:bg-slate-700 active:bg-violet-100 dark:active:bg-slate-600 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left active:bg-sand dark:active:bg-olive/30 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
                     >
                       <span className="text-base">{cat.emoji}</span>
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex-1 truncate">{s.name}</span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500">{cat.name}</span>
+                      <span className="text-sm font-medium text-ink dark:text-cream flex-1 truncate">{s.name}</span>
+                      <span className="text-[10px] text-taupe dark:text-sage">{cat.name}</span>
                     </button>
                   )
                 })}
@@ -100,41 +108,35 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
             )}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !name.trim()}
-            className="h-12 w-12 flex-shrink-0 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-violet-200 dark:shadow-none disabled:shadow-none touch-press"
-          >
-            <Plus size={24} strokeWidth={2.5} />
-          </button>
+          <ScanLine size={21} className="mr-2 flex-shrink-0 text-olive dark:text-sage" />
         </div>
 
-        <div className="flex gap-3 h-11">
-          <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-xl ring-1 ring-slate-200 dark:ring-slate-700 p-1 w-24 justify-between">
+        <div className="mt-3 flex gap-2 border-t border-gold/20 pt-3 h-10">
+          <div className="flex items-center bg-sand/55 dark:bg-olive/20 rounded-full p-1 w-24 justify-between">
             <button
               type="button"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-8 h-full flex items-center justify-center text-slate-400 active:text-violet-600 rounded-lg touch-press"
+              className="w-8 h-full flex items-center justify-center text-olive dark:text-sage active:text-terracotta rounded-full touch-press"
             >
               -
             </button>
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{quantity}</span>
+            <span className="text-sm font-bold text-ink dark:text-cream">{quantity}</span>
             <button
               type="button"
               onClick={() => setQuantity(quantity + 1)}
-              className="w-8 h-full flex items-center justify-center text-slate-400 active:text-violet-600 rounded-lg touch-press"
+              className="w-8 h-full flex items-center justify-center text-olive dark:text-sage active:text-terracotta rounded-full touch-press"
             >
               +
             </button>
           </div>
 
           <div className="flex-1 relative">
-            <div className="absolute inset-0 w-full h-full bg-slate-50 dark:bg-slate-800 rounded-xl ring-1 ring-slate-200 dark:ring-slate-700 flex items-center px-3 gap-2 pointer-events-none">
+            <div className="absolute inset-0 w-full h-full bg-sand/55 dark:bg-olive/20 rounded-full flex items-center px-3 gap-2 pointer-events-none">
               <span className="text-lg">{selectedCatInfo.emoji}</span>
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 flex-1 truncate">
+              <span className="text-xs font-bold text-olive dark:text-sage flex-1 truncate">
                 {selectedCatInfo.name}
               </span>
-              <ChevronDown size={14} className="text-slate-400" />
+              <ChevronDown size={14} className="text-taupe" />
             </div>
             <select
               value={category}
