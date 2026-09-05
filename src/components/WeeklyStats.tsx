@@ -3,6 +3,7 @@
 import { PurchaseHistory } from '@/lib/supabase'
 import { CalendarDays } from 'lucide-react'
 import { getCategoryInfo } from '@/lib/categories'
+import { getProductName, resolveCategory } from '@/lib/products'
 
 type Props = {
   purchases: PurchaseHistory[]
@@ -26,8 +27,8 @@ export default function WeeklyStats({ purchases }: Props) {
   })
 
   const totalUnits = weeklyPurchases.reduce((sum, purchase) => sum + purchase.quantity, 0)
-  const topCategory = getTopEntry(weeklyPurchases.map((purchase) => purchase.category))
-  const topItem = getTopEntry(weeklyPurchases.map((purchase) => purchase.item_name))
+  const topCategory = getTopEntry(weeklyPurchases.map((purchase) => resolveCategory(purchase.item_name, purchase.category)))
+  const topItem = getTopEntry(weeklyPurchases.map((purchase) => getProductName(purchase.item_name)))
   const topCategoryInfo = topCategory ? getCategoryInfo(topCategory[0]) : null
 
   return (

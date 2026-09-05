@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties } from 'react'
 import { RefreshCw, UsersRound } from 'lucide-react'
 import { supabase, appBackgroundUrl, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
+import { getProductKey, resolveCategory } from '@/lib/products'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
@@ -197,7 +198,7 @@ export default function Home() {
         id: i.id,
         item_name: i.name,
         quantity: i.quantity,
-        category: i.category,
+        category: resolveCategory(i.name, i.category),
       }))
       const { error: saveError } = await supabase.from('purchase_history')
         .upsert(historyItems, { onConflict: 'id', ignoreDuplicates: true })
@@ -222,18 +223,19 @@ export default function Home() {
   const autocompleteSuggestions = useMemo(() => {
     const seen = new Set<string>()
     const merged = [...recentPurchases, ...weeklyPurchases]
+      .sort((a, b) => Date.parse(b.purchased_at) - Date.parse(a.purchased_at))
 
     return merged
       .filter((purchase) => {
-        const key = purchase.item_name.trim().toLowerCase()
-        if (!key || seen.has(key)) return false
+        const key = getProductKey(purchase.item_name)
+        if (!purchase.item_name.trim() || seen.has(key)) return false
         seen.add(key)
         return true
       })
       .slice(0, 25)
       .map((purchase) => ({
         name: purchase.item_name,
-        category: purchase.category,
+        category: resolveCategory(purchase.item_name, purchase.category),
       }))
   }, [recentPurchases, weeklyPurchases])
 

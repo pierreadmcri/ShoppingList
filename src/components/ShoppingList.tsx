@@ -4,6 +4,7 @@ import { useId, useRef, useState, type TouchEvent } from 'react'
 import { Check, ChevronDown, Trash2, ShoppingBasket } from 'lucide-react'
 import { ShoppingItem } from '@/lib/supabase'
 import { CATEGORIES, getCategoryInfo } from '@/lib/categories'
+import { resolveCategory } from '@/lib/products'
 
 type Props = {
   items: ShoppingItem[]
@@ -21,7 +22,7 @@ export default function ShoppingList({ items, onToggle, onDelete, disabled = fal
   const progress = total === 0 ? 0 : Math.round((checked.length / total) * 100)
   const groups = CATEGORIES.map(category => ({
     ...category,
-    items: unchecked.filter(item => getCategoryInfo(item.category).id === category.id),
+    items: unchecked.filter(item => getCategoryInfo(resolveCategory(item.name, item.category)).id === category.id),
   })).filter(group => group.items.length > 0)
 
   if (total === 0) {

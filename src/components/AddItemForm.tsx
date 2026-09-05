@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useId } from 'react'
 import { Plus, Minus, ChevronDown, LoaderCircle } from 'lucide-react'
 import { CATEGORIES, getCategoryInfo } from '@/lib/categories'
+import { identifyProduct, inferCategory, matchesProductSearch, resolveCategory, type ProductCategory } from '@/lib/products'
 
 type Suggestion = { name: string; category: string }
 
@@ -14,7 +15,9 @@ type Props = {
 export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
   const [name, setName] = useState('')
   const [quantity, setQuantity] = useState(1)
-  const [category, setCategory] = useState(CATEGORIES[CATEGORIES.length - 1].name)
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null)
+  const recognizedProduct = identifyProduct(name)
+  const category = selectedCategory ?? inferCategory(name)
   const [loading, setLoading] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [activeSuggestion, setActiveSuggestion] = useState(-1)
@@ -32,7 +35,7 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
       await onAdd(name.trim(), quantity, category)
       setName('')
       setQuantity(1)
-      setCategory(CATEGORIES[CATEGORIES.length - 1].name)
+      setSelectedCategory(null)
       setActiveSuggestion(-1)
     } catch {
       // The parent reports the error; preserve the draft so it can be retried.
@@ -44,14 +47,14 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
 
   const handleSelectSuggestion = (s: Suggestion) => {
     setName(s.name)
-    setCategory(s.category || CATEGORIES[CATEGORIES.length - 1].name)
+    setSelectedCategory(resolveCategory(s.name, s.category))
     setShowSuggestions(false)
     setActiveSuggestion(-1)
     inputRef.current?.focus()
   }
 
   const filtered = name.trim().length >= 1
-    ? suggestions.filter(s => s.name.toLowerCase().includes(name.trim().toLowerCase())).slice(0, 8)
+    ? suggestions.filter(s => matchesProductSearch(s.name, name)).slice(0, 8)
     : []
   const suggestionsOpen = showSuggestions && filtered.length > 0 && !loading
 
@@ -118,6 +121,7 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
               aria-activedescendant={suggestionsOpen && activeSuggestion >= 0 && filtered[activeSuggestion] ? `${suggestionsId}-${activeSuggestion}` : undefined}
               onChange={(e) => {
                 setName(e.target.value)
+                setSelectedCategory(null)
                 setShowSuggestions(true)
                 setActiveSuggestion(-1)
               }}
@@ -196,7 +200,7 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
               value={category}
               aria-label="Item category"
               disabled={loading}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setSelectedCategory(e.target.value as ProductCategory)}
               className="w-full h-full min-h-11 opacity-0 z-10 absolute inset-0 text-[16px] cursor-pointer"
             >
               {CATEGORIES.map((cat) => (
@@ -207,6 +211,15 @@ export default function AddItemForm({ onAdd, suggestions = [] }: Props) {
             </select>
           </div>
         </div>
+        {name.trim() && (
+          <p role="status" className="mt-2 px-1 text-xs text-olive dark:text-sage">
+            {selectedCategory !== null
+              ? 'Selected category · you can change it above.'
+              : recognizedProduct
+                ? `Recognized: ${recognizedProduct.name} · category selected automatically.`
+                : 'Choose a category, or add it to classify later.'}
+          </p>
+        )}
       </form>
     </div>
   )

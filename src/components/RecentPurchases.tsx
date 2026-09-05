@@ -3,6 +3,7 @@
 import { Clock } from 'lucide-react'
 import { PurchaseHistory } from '@/lib/supabase'
 import { getCategoryInfo } from '@/lib/categories'
+import { resolveCategory } from '@/lib/products'
 
 type Props = {
   purchases: PurchaseHistory[]
@@ -31,7 +32,7 @@ export default function RecentPurchases({ purchases }: Props) {
               <h3 className="text-xs font-semibold text-olive mb-1">{date}</h3>
               <ul className="divide-y divide-gold/20">
                 {items.map((item) => {
-                  const cat = getCategoryInfo(item.category)
+                  const cat = getCategoryInfo(resolveCategory(item.item_name, item.category))
                   return (
                     <li key={item.id} className="flex items-start gap-3 py-3">
                       <span aria-hidden="true" className="text-base leading-6 shrink-0">{cat.emoji}</span>
