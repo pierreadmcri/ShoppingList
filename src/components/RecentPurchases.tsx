@@ -9,51 +9,65 @@ type Props = {
 }
 
 export default function RecentPurchases({ purchases }: Props) {
-  if (purchases.length === 0) return null
-
   const grouped = groupByDate(purchases)
 
   return (
-    <div className="card p-4">
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <Clock size={16} className="text-cobalt" />
-        <h2 className="display-title text-xl text-ink">Recent purchases</h2>
+    <section className="card p-5" aria-labelledby="recent-purchases-title">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock size={18} aria-hidden="true" className="text-terracotta shrink-0" />
+        <h2 id="recent-purchases-title" className="display-title text-xl text-ink">Recent purchases</h2>
       </div>
-      <div className="space-y-4">
-        {Object.entries(grouped).map(([date, items]) => (
-          <div key={date}>
-            <p className="text-[10px] font-bold text-terracotta uppercase tracking-wider mb-2 px-1">{date}</p>
-            <div className="space-y-1">
-              {items.map((item) => {
-                const cat = getCategoryInfo(item.category)
-                return (
-                  <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-sand/25 border border-gold/20">
-                    <span className="text-sm">{cat.emoji}</span>
-                    <span className="text-ink text-sm flex-1 font-medium truncate">{item.item_name}</span>
-                    {item.quantity > 1 && (
-                      <span className="text-[10px] text-olive bg-sand px-1.5 py-0.5 rounded font-bold">×{item.quantity}</span>
-                    )}
-                  </div>
-                )
-              })}
+      {purchases.length === 0 ? (
+        <div className="border-t border-gold/25 pt-4 pb-1">
+          <p className="text-sm font-semibold text-ink">No purchases yet</p>
+          <p className="mt-1 text-sm leading-relaxed text-olive">
+            Tick items off your list and complete your shopping. Your purchases will appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {Object.entries(grouped).map(([date, items]) => (
+            <div key={date}>
+              <h3 className="text-xs font-semibold text-olive mb-1">{date}</h3>
+              <ul className="divide-y divide-gold/20">
+                {items.map((item) => {
+                  const cat = getCategoryInfo(item.category)
+                  return (
+                    <li key={item.id} className="flex items-start gap-3 py-3">
+                      <span aria-hidden="true" className="text-base leading-6 shrink-0">{cat.emoji}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-ink text-sm leading-6 font-medium break-words">{item.item_name}</p>
+                        <p className="text-xs leading-5 text-olive">{cat.name}</p>
+                      </div>
+                      <span className="text-sm leading-6 text-ink shrink-0 font-semibold tabular-nums">
+                        <span className="sr-only">Quantity: </span>×{item.quantity}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }
 
 function groupByDate(purchases: PurchaseHistory[]): Record<string, PurchaseHistory[]> {
   const groups: Record<string, PurchaseHistory[]> = {}
-  for (const p of purchases) {
-    const date = new Date(p.purchased_at).toLocaleDateString('en-US', {
+  const sortedPurchases = [...purchases].sort((a, b) =>
+    new Date(b.purchased_at).getTime() - new Date(a.purchased_at).getTime()
+  )
+  for (const purchase of sortedPurchases) {
+    const date = new Date(purchase.purchased_at).toLocaleDateString('en-US', {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
+      year: 'numeric',
     })
     if (!groups[date]) groups[date] = []
-    groups[date].push(p)
+    groups[date].push(purchase)
   }
   return groups
 }

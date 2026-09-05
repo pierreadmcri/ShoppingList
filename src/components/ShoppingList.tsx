@@ -1,28 +1,34 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { Check, Trash2, ShoppingBasket, ArrowRight } from 'lucide-react'
+import { useId, useRef, useState, type TouchEvent } from 'react'
+import { Check, ChevronDown, Trash2, ShoppingBasket } from 'lucide-react'
 import { ShoppingItem } from '@/lib/supabase'
-import { getCategoryInfo } from '@/lib/categories'
+import { CATEGORIES, getCategoryInfo } from '@/lib/categories'
 
 type Props = {
   items: ShoppingItem[]
   onToggle: (id: string, checked: boolean) => Promise<void>
   onDelete: (id: string) => Promise<void>
-  onValidatePurchases: () => Promise<void>
+  disabled?: boolean
 }
 
-export default function ShoppingList({ items, onToggle, onDelete, onValidatePurchases }: Props) {
+export default function ShoppingList({ items, onToggle, onDelete, disabled = false }: Props) {
+  const [cartExpanded, setCartExpanded] = useState(false)
+  const cartId = useId()
   const unchecked = items.filter(i => !i.checked)
   const checked = items.filter(i => i.checked)
   const total = items.length
   const progress = total === 0 ? 0 : Math.round((checked.length / total) * 100)
+  const groups = CATEGORIES.map(category => ({
+    ...category,
+    items: unchecked.filter(item => getCategoryInfo(item.category).id === category.id),
+  })).filter(group => group.items.length > 0)
 
   if (total === 0) {
     return (
       <div className="empty-state">
         <div className="w-16 h-16 bg-sand dark:bg-olive/20 rounded-full flex items-center justify-center mb-4">
-          <ShoppingBasket size={27} className="text-terracotta" />
+          <ShoppingBasket size={27} className="text-terracotta" aria-hidden="true" />
         </div>
         <p className="display-title text-xl text-ink dark:text-cream">Your list is empty</p>
         <p className="mt-1 text-sm text-taupe dark:text-sage">Add anything your household needs.</p>
@@ -31,191 +37,187 @@ export default function ShoppingList({ items, onToggle, onDelete, onValidatePurc
   }
 
   return (
-    <div className="space-y-4 pb-4">
-      {total > 0 && (
-        <div className="flex items-center gap-3 px-1">
-          <ShoppingBasket size={20} className="text-terracotta" />
-          <h2 className="display-title text-[22px] text-ink dark:text-cream">{unchecked.length} to pick up</h2>
+    <div className="space-y-5 pb-4">
+      <div className="flex items-center gap-3 px-1">
+        <ShoppingBasket size={20} className="shrink-0 text-terracotta" aria-hidden="true" />
+        <h2 className="display-title text-[22px] text-ink dark:text-cream">
+          {unchecked.length === 0 ? 'Everything is in your cart' : `${unchecked.length} to pick up`}
+        </h2>
+        <div
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`Shopping progress: ${checked.length} of ${total} items checked`}
+          className="ml-auto h-1.5 bg-sand dark:bg-olive/30 rounded-full overflow-hidden w-16 shrink-0"
+        >
           <div
-            role="progressbar"
-            aria-valuenow={progress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`Shopping progress: ${checked.length} of ${total} items checked`}
-            className="ml-auto h-1.5 bg-sand dark:bg-olive/30 rounded-full overflow-hidden w-20"
-          >
-            <div
-              className="h-full bg-terracotta transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+            className="h-full bg-terracotta transition-[width] duration-300 motion-reduce:transition-none"
+            style={{ width: `${progress}%` }}
+          />
         </div>
-      )}
-
-      <div className="list-shell overflow-hidden">
-        {unchecked.map((item, i) => (
-          <div key={item.id} className="animate-enter" style={{ animationDelay: `${i * 0.03}s` }}>
-            <SwipeableItemRow item={item} onToggle={onToggle} onDelete={onDelete} />
-          </div>
-        ))}
       </div>
 
-      {checked.length > 0 && (
-        <div className="pt-2">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="text-xs font-bold text-olive dark:text-sage uppercase tracking-widest">
-              In cart ({checked.length})
-            </h3>
-            <button
-              onClick={onValidatePurchases}
-              className="hidden"
-            >
-              <Check size={14} strokeWidth={3} />
-              Complete
-            </button>
-          </div>
-          <div className="list-shell overflow-hidden opacity-70">
-            {checked.map((item) => (
-              <SwipeableItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} />
+      {groups.map(group => (
+        <section key={group.id} aria-label={group.name}>
+          <h3 className="mb-2 flex items-center gap-2 px-1 text-sm font-semibold text-olive dark:text-sage">
+            <span aria-hidden="true">{group.emoji}</span>
+            {group.name}
+            <span className="ml-auto tabular-nums" aria-label={`${group.items.length} items`}>{group.items.length}</span>
+          </h3>
+          <div className="list-shell overflow-hidden">
+            {group.items.map(item => (
+              <SwipeableItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} disabled={disabled} />
             ))}
           </div>
+        </section>
+      ))}
+
+      {checked.length > 0 && (
+        <section aria-label="In cart" className="border-t border-gold/25 pt-1">
           <button
-            onClick={onValidatePurchases}
-            className="mt-4 w-full h-14 rounded-2xl bg-terracotta text-white font-bold flex items-center justify-between px-5 shadow-[0_10px_24px_-12px_rgba(201,75,38,0.8)] touch-press"
+            type="button"
+            aria-expanded={cartExpanded}
+            aria-controls={cartId}
+            onClick={() => setCartExpanded(expanded => !expanded)}
+            className="flex min-h-12 w-full items-center gap-2 rounded-lg px-1 text-sm font-semibold text-olive dark:text-sage touch-press"
           >
-            <ShoppingBasket size={21} />
-            <span>Complete shopping</span>
-            <ArrowRight size={21} />
+            <Check size={18} aria-hidden="true" />
+            <span>In cart</span>
+            <span className="tabular-nums">({checked.length})</span>
+            <ChevronDown size={18} aria-hidden="true" className={`ml-auto transition-transform motion-reduce:transition-none ${cartExpanded ? 'rotate-180' : ''}`} />
           </button>
-        </div>
+          <div id={cartId} hidden={!cartExpanded} className="list-shell overflow-hidden">
+            {cartExpanded && checked.map(item => (
+              <SwipeableItemRow key={item.id} item={item} onToggle={onToggle} onDelete={onDelete} disabled={disabled} />
+            ))}
+          </div>
+        </section>
       )}
     </div>
   )
 }
 
-function SwipeableItemRow({ item, onToggle, onDelete }: {
+function SwipeableItemRow({ item, onToggle, onDelete, disabled }: {
   item: ShoppingItem
   onToggle: (id: string, checked: boolean) => Promise<void>
   onDelete: (id: string) => Promise<void>
+  disabled: boolean
 }) {
   const [offsetX, setOffsetX] = useState(0)
   const [swiping, setSwiping] = useState(false)
-  const startX = useRef(0)
-  const startY = useRef(0)
-  const locked = useRef(false)
-  const rowRef = useRef<HTMLDivElement>(null)
+  const start = useRef({ x: 0, y: 0 })
+  const direction = useRef<'pending' | 'horizontal' | 'vertical' | null>(null)
+  const distance = useRef(0)
+  const suppressClickUntil = useRef(0)
 
-  const THRESHOLD_CHECK = 80
-  const THRESHOLD_DELETE = -80
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX
-    startY.current = e.touches[0].clientY
-    locked.current = false
-    setSwiping(true)
+  const resetSwipe = () => {
+    distance.current = 0
+    direction.current = null
+    setOffsetX(0)
+    setSwiping(false)
   }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!swiping) return
-    const dx = e.touches[0].clientX - startX.current
-    const dy = e.touches[0].clientY - startY.current
+  const handleTouchStart = (event: TouchEvent) => {
+    resetSwipe()
+    if (disabled || event.touches.length !== 1) return
+    start.current = { x: event.touches[0].clientX, y: event.touches[0].clientY }
+    direction.current = 'pending'
+  }
 
-    // Lock direction after 10px movement
-    if (!locked.current && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 10) {
-      setSwiping(false)
-      setOffsetX(0)
+  const handleTouchMove = (event: TouchEvent) => {
+    if (disabled || event.touches.length !== 1) {
+      resetSwipe()
       return
     }
-    if (Math.abs(dx) > 10) locked.current = true
+    if (direction.current === null || direction.current === 'vertical') return
+    const dx = event.touches[0].clientX - start.current.x
+    const dy = event.touches[0].clientY - start.current.y
 
-    // Clamp to [-120, 120]
-    setOffsetX(Math.max(-120, Math.min(120, dx)))
+    if (direction.current === 'pending') {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 12) return
+      // A diagonal or vertical gesture belongs to page scrolling.
+      direction.current = Math.abs(dx) > Math.abs(dy) * 1.5 ? 'horizontal' : 'vertical'
+      if (direction.current === 'vertical') return
+      setSwiping(true)
+    }
+    suppressClickUntil.current = Date.now() + 500
+    distance.current = Math.max(-120, Math.min(120, dx))
+    setOffsetX(distance.current)
   }
 
   const handleTouchEnd = () => {
-    if (offsetX > THRESHOLD_CHECK) {
-      onToggle(item.id, !item.checked)
-    } else if (offsetX < THRESHOLD_DELETE) {
-      onDelete(item.id)
+    const completedDistance = direction.current === 'horizontal' ? distance.current : 0
+    if (direction.current === 'horizontal') suppressClickUntil.current = Date.now() + 500
+    resetSwipe()
+    if (disabled) return
+    if (completedDistance > 80) {
+      void onToggle(item.id, !item.checked)
+    } else if (completedDistance < -80) {
+      void onDelete(item.id)
     }
-    setOffsetX(0)
-    setSwiping(false)
-    locked.current = false
   }
-
-  const cat = getCategoryInfo(item.category)
-  const isChecked = item.checked
-
-  // Background indicators
-  const showCheckBg = offsetX > 30
-  const showDeleteBg = offsetX < -30
 
   return (
     <div className="relative overflow-hidden border-b border-gold/20 last:border-b-0">
-      {/* Swipe backgrounds */}
-      <div className={`absolute inset-0 flex items-center px-5 transition-opacity ${showCheckBg ? 'opacity-100' : 'opacity-0'} ${isChecked ? 'bg-sand dark:bg-olive/30' : 'bg-sage/30 dark:bg-olive/40'}`}>
-        <Check size={20} className={isChecked ? 'text-amber-500' : 'text-emerald-500'} strokeWidth={3} />
-        <span className={`ml-2 text-xs font-bold ${isChecked ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-          {isChecked ? 'Uncheck' : 'Check'}
-        </span>
+      <div aria-hidden="true" className={`absolute inset-0 flex items-center px-5 ${offsetX > 30 ? 'opacity-100' : 'opacity-0'} bg-sand dark:bg-olive/40`}>
+        <Check size={20} className="text-olive dark:text-sage" strokeWidth={3} />
+        <span className="ml-2 text-sm font-semibold text-olive dark:text-sage">{item.checked ? 'Uncheck' : 'Check'}</span>
       </div>
-      <div className={`absolute inset-0 flex items-center justify-end px-5 transition-opacity ${showDeleteBg ? 'opacity-100' : 'opacity-0'} bg-red-100 dark:bg-red-900/30`}>
-        <span className="mr-2 text-xs font-bold text-red-600 dark:text-red-400">Delete</span>
-        <Trash2 size={20} className="text-red-500" />
+      <div aria-hidden="true" className={`absolute inset-0 flex items-center justify-end px-5 ${offsetX < -30 ? 'opacity-100' : 'opacity-0'} bg-red-100 dark:bg-red-900/30`}>
+        <span className="mr-2 text-sm font-semibold text-red-700 dark:text-red-300">Delete</span>
+        <Trash2 size={20} className="text-red-700 dark:text-red-300" />
       </div>
 
-      {/* Foreground row */}
       <div
-        ref={rowRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{
-          transform: `translateX(${offsetX}px)`,
-          transition: swiping ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
+        onTouchCancel={resetSwipe}
+        onClickCapture={event => {
+          if (Date.now() < suppressClickUntil.current && event.detail !== 0) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
         }}
-        className={`flex items-center gap-3 min-h-[72px] px-4 py-3 transition-colors duration-200 ${
-          isChecked
-            ? 'bg-sand/40 dark:bg-olive/15'
-            : 'bg-cream/85 dark:bg-night/80'
+        style={{ transform: `translateX(${offsetX}px)`, touchAction: 'pan-y pinch-zoom' }}
+        className={`flex min-h-[76px] items-center gap-1 px-2 ${swiping ? '' : 'transition-transform duration-200 motion-reduce:transition-none'} ${
+          item.checked ? 'bg-sand dark:bg-night' : 'bg-cream dark:bg-night'
         }`}
       >
         <button
-          onClick={() => onToggle(item.id, !isChecked)}
-          className={`w-7 h-7 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all touch-press ${
-            isChecked
-              ? 'bg-olive border-olive scale-95'
-              : 'border-gold/60 dark:border-sage/50 bg-transparent'
-          }`}
+          type="button"
+          role="checkbox"
+          aria-checked={item.checked}
+          aria-label={`${item.name}, quantity ${item.quantity}`}
+          disabled={disabled}
+          onClick={() => void onToggle(item.id, !item.checked)}
+          className="flex min-h-[76px] min-w-0 flex-1 items-center gap-1 rounded-xl py-3 text-left touch-press disabled:opacity-60"
         >
-          {isChecked && <Check size={14} className="text-white" strokeWidth={4} />}
-        </button>
-
-        <div
-          className="flex-1 flex items-center gap-3 overflow-hidden min-w-0 py-1 cursor-pointer"
-          onClick={() => onToggle(item.id, !isChecked)}
-        >
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sand/60 dark:bg-olive/25 text-xl flex-shrink-0">{cat.emoji}</span>
-          <div className="min-w-0 flex-1">
-            <p className={`font-semibold text-[15px] truncate transition-all ${
-              isChecked ? 'text-taupe line-through' : 'text-ink dark:text-cream'
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center" aria-hidden="true">
+            <span className={`flex h-7 w-7 items-center justify-center rounded-lg border-2 ${
+              item.checked ? 'border-olive bg-olive' : 'border-gold dark:border-sage/70'
+            }`}>
+              {item.checked && <Check size={15} className="text-white" strokeWidth={3} />}
+            </span>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className={`block break-words text-[15px] font-semibold leading-snug ${
+              item.checked ? 'text-olive dark:text-sage line-through' : 'text-ink dark:text-cream'
             }`}>
               {item.name}
-            </p>
-            <p className="text-[11px] text-taupe dark:text-sage">
-              {cat.name} <span className="text-olive dark:text-sage font-bold ml-1">×{item.quantity}</span>
-            </p>
-          </div>
-        </div>
-
+            </span>
+            <span className="mt-1 block text-sm font-semibold tabular-nums text-olive dark:text-sage">×{item.quantity}</span>
+          </span>
+        </button>
         <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete(item.id)
-          }}
-          className="w-10 h-10 flex items-center justify-center text-gold/60 dark:text-sage/40 active:text-red-500 rounded-xl transition-colors touch-press"
+          type="button"
+          aria-label={`Delete ${item.name}`}
+          disabled={disabled}
+          onClick={() => void onDelete(item.id)}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-olive dark:text-sage hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950 dark:hover:text-red-300 transition-colors touch-press disabled:opacity-60"
         >
-          <Trash2 size={18} />
+          <Trash2 size={18} aria-hidden="true" />
         </button>
       </div>
     </div>

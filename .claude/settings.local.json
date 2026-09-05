@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "Bash([ -f \"C:/Users/pierr/.claude/plugins/marketplaces/nyldn-plugins//vendors/ui-ux-pro-max-skill/src/ui-ux-pro-max/scripts/search.py\" ])",
+      "Bash(python3 -c \"import csv, re, math\")",
+      "Bash(npx next:*)",
+      "Bash(npx --yes next@16.1.6 build)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

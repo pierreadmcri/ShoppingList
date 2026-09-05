@@ -1,8 +1,7 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import { PurchaseHistory } from '@/lib/supabase'
-import { CalendarDays, Package, Sparkles, Tags } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import { getCategoryInfo } from '@/lib/categories'
 
 type Props = {
@@ -10,80 +9,86 @@ type Props = {
 }
 
 const numberFormatter = new Intl.NumberFormat('en-US')
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
 
 export default function WeeklyStats({ purchases }: Props) {
-  const weekStart = getWeekStart(new Date())
-  const weeklyPurchases = purchases.filter((purchase) => new Date(purchase.purchased_at) >= weekStart)
+  const now = new Date()
+  const weekStart = getWeekStart(now)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekEnd.getDate() + 6)
+  const weeklyPurchases = purchases.filter((purchase) => {
+    const purchasedAt = new Date(purchase.purchased_at)
+    return purchasedAt >= weekStart && purchasedAt <= now
+  })
 
   const totalUnits = weeklyPurchases.reduce((sum, purchase) => sum + purchase.quantity, 0)
-  const topCategory = getTopKey(weeklyPurchases.map((purchase) => purchase.category))
-  const topItem = getTopKey(weeklyPurchases.map((purchase) => purchase.item_name))
-  const topCategoryInfo = topCategory ? getCategoryInfo(topCategory) : null
+  const topCategory = getTopEntry(weeklyPurchases.map((purchase) => purchase.category))
+  const topItem = getTopEntry(weeklyPurchases.map((purchase) => purchase.item_name))
+  const topCategoryInfo = topCategory ? getCategoryInfo(topCategory[0]) : null
 
   return (
-    <div className="card overflow-hidden">
-      {/* Hero block */}
-      <div className="relative p-5 bg-terracotta text-white">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold uppercase tracking-widest opacity-80">
-            This week
-          </span>
-          <span className="text-[10px] px-2 py-1 rounded-full bg-white/20 backdrop-blur-sm font-semibold flex items-center gap-1">
-            <CalendarDays size={11} />
-            Since Monday
-          </span>
-        </div>
+    <section className="card overflow-hidden" aria-labelledby="weekly-stats-title">
+      <div className="p-5">
+        <h2 id="weekly-stats-title" className="display-title text-2xl text-ink">This week</h2>
+        <p className="mt-2 flex items-center gap-2 text-xs leading-relaxed text-olive">
+          <CalendarDays size={14} aria-hidden="true" className="shrink-0" />
+          {dateFormatter.formatRange(weekStart, weekEnd)}
+        </p>
 
-        <div className="flex items-end gap-2 mb-1">
-          <span className="text-5xl font-extrabold tracking-tight leading-none">
-            {numberFormatter.format(weeklyPurchases.length)}
-          </span>
-          <span className="text-sm font-medium opacity-90 mb-1.5">
-            {weeklyPurchases.length === 1 ? 'item purchased' : 'items purchased'}
-          </span>
-        </div>
-        <p className="text-xs opacity-80">
-          {totalUnits > 0
-            ? `${numberFormatter.format(totalUnits)} total units`
-            : 'No purchases yet this week'}
+        <dl className="mt-6 grid grid-cols-2 gap-4">
+          <div>
+            <dt className="text-xs font-medium text-olive">Purchase entries</dt>
+            <dd className="mt-1 text-4xl font-extrabold tracking-tight text-terracotta tabular-nums">
+              {numberFormatter.format(weeklyPurchases.length)}
+            </dd>
+          </div>
+          <div className="border-l border-gold/25 pl-4">
+            <dt className="text-xs font-medium text-olive">Total units</dt>
+            <dd className="mt-1 text-4xl font-extrabold tracking-tight text-ink tabular-nums">
+              {numberFormatter.format(totalUnits)}
+            </dd>
+          </div>
+        </dl>
+        <p className="mt-3 text-xs leading-relaxed text-olive">
+          {weeklyPurchases.length > 0
+            ? 'An item bought again counts as another entry.'
+            : 'Complete a shopping trip to start your weekly summary.'}
         </p>
       </div>
 
-      {/* Stats tiles */}
-      <div className="grid grid-cols-2 gap-2 p-3">
-        <StatTile
-          icon={<Package size={14} />}
-          label="Items"
-          value={numberFormatter.format(weeklyPurchases.length)}
-        />
-        <StatTile
-          icon={<Sparkles size={14} />}
-          label="Units"
-          value={numberFormatter.format(totalUnits)}
-        />
-        <StatTile
-          icon={<Tags size={14} />}
-          label="Top category"
-          value={topCategoryInfo ? `${topCategoryInfo.emoji} ${topCategoryInfo.name}` : '—'}
-        />
-        <StatTile
-          icon={<Package size={14} />}
-          label="Top product"
-          value={topItem || '—'}
-        />
-      </div>
-    </div>
+      {topCategory && topCategoryInfo && topItem && (
+        <div className="border-t border-gold/25 px-5 pb-1">
+          <p className="pt-4 text-xs font-semibold text-olive">Most frequent by purchase entry</p>
+          <dl className="divide-y divide-gold/20">
+            <div className="py-4">
+              <dt className="text-xs text-olive">Category</dt>
+              <dd className="mt-1 flex items-start justify-between gap-3">
+                <span className="min-w-0 break-words text-sm font-semibold text-ink">
+                  <span aria-hidden="true">{topCategoryInfo.emoji} </span>{topCategoryInfo.name}
+                </span>
+                <span className="shrink-0 text-xs leading-5 text-olive">{formatEntries(topCategory[1])}</span>
+              </dd>
+            </div>
+            <div className="py-4">
+              <dt className="text-xs text-olive">Product</dt>
+              <dd className="mt-1 flex items-start justify-between gap-3">
+                <span className="min-w-0 break-words text-sm font-semibold text-ink">{topItem[0]}</span>
+                <span className="shrink-0 text-xs leading-5 text-olive">{formatEntries(topItem[1])}</span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      )}
+    </section>
   )
 }
 
-function StatTile({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-gold/25 bg-sand/30 p-3">
-      <div className="text-terracotta mb-1.5">{icon}</div>
-      <p className="text-[10px] text-taupe uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-bold text-ink truncate mt-0.5">{value}</p>
-    </div>
-  )
+function formatEntries(count: number) {
+  return `${numberFormatter.format(count)} ${count === 1 ? 'entry' : 'entries'}`
 }
 
 function getWeekStart(referenceDate: Date) {
@@ -95,13 +100,11 @@ function getWeekStart(referenceDate: Date) {
   return result
 }
 
-function getTopKey(values: string[]) {
-  if (values.length === 0) return ''
+function getTopEntry(values: string[]): [string, number] | undefined {
+  const counts = new Map<string, number>()
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1)
+  }
 
-  const counts = values.reduce<Record<string, number>>((acc, key) => {
-    acc[key] = (acc[key] || 0) + 1
-    return acc
-  }, {})
-
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || ''
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]
 }
