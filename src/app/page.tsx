@@ -4,16 +4,17 @@ import { useState, useEffect, useCallback, useMemo, useRef, type CSSProperties }
 import { RefreshCw, UsersRound } from 'lucide-react'
 import { supabase, appBackgroundUrl, ShoppingItem, PurchaseHistory } from '@/lib/supabase'
 import { getProductKey, resolveCategory } from '@/lib/products'
+import { getHistoryStart } from '@/lib/stats'
 import AddItemForm from '@/components/AddItemForm'
 import ShoppingList from '@/components/ShoppingList'
 import RecentPurchases from '@/components/RecentPurchases'
-import WeeklyStats from '@/components/WeeklyStats'
+import StatsDashboard from '@/components/StatsDashboard'
 import BottomNav, { View } from '@/components/BottomNav'
 
 export default function Home() {
   const [items, setItems] = useState<ShoppingItem[]>([])
   const [recentPurchases, setRecentPurchases] = useState<PurchaseHistory[]>([])
-  const [weeklyPurchases, setWeeklyPurchases] = useState<PurchaseHistory[]>([])
+  const [historyPurchases, setHistoryPurchases] = useState<PurchaseHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('list')
@@ -50,21 +51,15 @@ export default function Home() {
     else if (data) setRecentPurchases(data)
   }, [])
 
-  const fetchWeeklyPurchases = useCallback(async () => {
-    const weekStart = new Date()
-    const day = weekStart.getDay()
-    const diff = day === 0 ? -6 : 1 - day
-    weekStart.setDate(weekStart.getDate() + diff)
-    weekStart.setHours(0, 0, 0, 0)
-
+  const fetchHistoryPurchases = useCallback(async () => {
     const { data, error } = await supabase
       .from('purchase_history')
       .select('*')
-      .gte('purchased_at', weekStart.toISOString())
+      .gte('purchased_at', getHistoryStart(new Date()).toISOString())
       .order('purchased_at', { ascending: false })
 
-    if (error) setError('Could not load weekly purchases. Please refresh to try again.')
-    else if (data) setWeeklyPurchases(data)
+    if (error) setError('Could not load your purchase stats. Please refresh to try again.')
+    else if (data) setHistoryPurchases(data)
   }, [])
 
   const fetchAll = useCallback(async () => {
@@ -72,13 +67,13 @@ export default function Home() {
     setUndoFailed(false)
     setLoading(true)
     try {
-      await Promise.all([fetchItems(), fetchRecentPurchases(), fetchWeeklyPurchases()])
+      await Promise.all([fetchItems(), fetchRecentPurchases(), fetchHistoryPurchases()])
     } catch {
       setError('Could not refresh your data. Please try again.')
     } finally {
       setLoading(false)
     }
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases])
+  }, [fetchItems, fetchRecentPurchases, fetchHistoryPurchases])
 
   useEffect(() => {
     async function load() {
@@ -93,12 +88,12 @@ export default function Home() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'shopping_items' }, fetchItems)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_history' }, () => {
         fetchRecentPurchases()
-        fetchWeeklyPurchases()
+        fetchHistoryPurchases()
       })
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [fetchItems, fetchRecentPurchases, fetchWeeklyPurchases])
+  }, [fetchItems, fetchRecentPurchases, fetchHistoryPurchases])
 
   const handleAddItem = async (name: string, quantity: number, category: string) => {
     setError(null)
@@ -209,7 +204,7 @@ export default function Home() {
       if (deleteError) throw deleteError
       setItems(prev => prev.filter(i => !ids.includes(i.id)))
       setNotice({ message: `Shopping complete · ${ids.length} ${ids.length === 1 ? 'item' : 'items'} saved` })
-      await Promise.all([fetchRecentPurchases(), fetchWeeklyPurchases()])
+      await Promise.all([fetchRecentPurchases(), fetchHistoryPurchases()])
     } catch {
       setError(historySaved
         ? 'Purchases saved, but the list could not be cleared. Try Complete shopping again to finish.'
@@ -222,7 +217,7 @@ export default function Home() {
 
   const autocompleteSuggestions = useMemo(() => {
     const seen = new Set<string>()
-    const merged = [...recentPurchases, ...weeklyPurchases]
+    const merged = [...recentPurchases, ...historyPurchases]
       .sort((a, b) => Date.parse(b.purchased_at) - Date.parse(a.purchased_at))
 
     return merged
@@ -237,7 +232,7 @@ export default function Home() {
         name: purchase.item_name,
         category: resolveCategory(purchase.item_name, purchase.category),
       }))
-  }, [recentPurchases, weeklyPurchases])
+  }, [recentPurchases, historyPurchases])
 
   const uncheckedCount = items.filter(i => !i.checked).length
   const checkedCount = items.length - uncheckedCount
@@ -255,7 +250,7 @@ export default function Home() {
           <div className="min-w-0">
             <p className="eyebrow mb-1">{view === 'list' ? 'Our household list' : 'Our household journal'}</p>
             <h1 className="display-title text-[27px] leading-tight text-ink tracking-[-0.025em]">
-              {view === 'list' ? 'Alisa & Pierre' : 'Stats'}
+              {view === 'list' ? 'Alisa & Pierre' : 'Dashboard'}
             </h1>
             <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-olive">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-terracotta text-white">A</span>
@@ -293,7 +288,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-4 animate-enter">
-            <WeeklyStats purchases={weeklyPurchases} />
+            <StatsDashboard purchases={historyPurchases} loading={loading} />
             <RecentPurchases purchases={recentPurchases} />
           </div>
         )}
