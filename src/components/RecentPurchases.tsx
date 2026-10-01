@@ -1,6 +1,7 @@
 'use client'
 
-import { Clock } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronDown, Clock } from 'lucide-react'
 import { PurchaseHistory } from '@/lib/supabase'
 import { getCategoryInfo } from '@/lib/categories'
 import { resolveCategory } from '@/lib/products'
@@ -9,8 +10,12 @@ type Props = {
   purchases: PurchaseHistory[]
 }
 
+const COLLAPSED_DAYS = 3
+
 export default function RecentPurchases({ purchases }: Props) {
-  const grouped = groupByDate(purchases)
+  const [expanded, setExpanded] = useState(false)
+  const groups = Object.entries(groupByDate(purchases))
+  const visibleGroups = expanded ? groups : groups.slice(0, COLLAPSED_DAYS)
 
   return (
     <section className="card p-5" aria-labelledby="recent-purchases-title">
@@ -27,7 +32,7 @@ export default function RecentPurchases({ purchases }: Props) {
         </div>
       ) : (
         <div className="space-y-5">
-          {Object.entries(grouped).map(([date, items]) => (
+          {visibleGroups.map(([date, items]) => (
             <div key={date}>
               <h3 className="text-xs font-semibold text-olive mb-1">{date}</h3>
               <ul className="divide-y divide-gold/20">
@@ -49,6 +54,17 @@ export default function RecentPurchases({ purchases }: Props) {
               </ul>
             </div>
           ))}
+          {groups.length > COLLAPSED_DAYS && (
+            <button
+              type="button"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+              className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-sand/70 text-sm font-semibold text-olive touch-press"
+            >
+              {expanded ? 'Show less' : `Show ${groups.length - COLLAPSED_DAYS} more ${groups.length - COLLAPSED_DAYS === 1 ? 'day' : 'days'}`}
+              <ChevronDown size={16} aria-hidden="true" className={expanded ? 'rotate-180' : ''} />
+            </button>
+          )}
         </div>
       )}
     </section>
